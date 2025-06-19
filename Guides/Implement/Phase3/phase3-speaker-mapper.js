@@ -1,4 +1,4 @@
-// Speaker Mapper - Handles voice selection and mapping
+// Enhanced Speaker Mapper - frontend/js/speaker-mapper.js
 class SpeakerMapper {
     constructor() {
         this.availableVoices = [];
@@ -377,4 +377,4 @@ class SpeakerMapper {
 }
 
 // Export for use in app.js
-window.SpeakerMapper = SpeakerMapper; 
+window.SpeakerMapper = SpeakerMapper;

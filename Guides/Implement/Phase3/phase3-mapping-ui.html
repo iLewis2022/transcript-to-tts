@@ -58,89 +58,6 @@
                 <div id="parse-results"></div>
             </section>
             
-            <!-- Cost Analysis Section - Phase 4 -->
-            <section id="cost-section" class="section hidden">
-                <h2>Cost Analysis & Warnings</h2>
-                
-                <!-- Real-time Quota Display -->
-                <div id="quota-display" class="quota-display">
-                    <h3>ElevenLabs Quota Status</h3>
-                    <div class="quota-meter">
-                        <div class="quota-bar">
-                            <div class="quota-used" style="width: 0%"></div>
-                        </div>
-                        <div class="quota-labels">
-                            <span class="quota-current">0</span> / 
-                            <span class="quota-total">1,000,000</span> characters
-                        </div>
-                    </div>
-                    <div class="quota-details">
-                        <p>Remaining: <span class="quota-remaining">1,000,000</span> characters</p>
-                        <p>Resets: <span class="quota-reset-date">Loading...</span></p>
-                    </div>
-                </div>
-                
-                <!-- Episode Cost Estimate -->
-                <div id="episode-cost" class="cost-preview">
-                    <h3>Episode Processing Cost</h3>
-                    <div class="cost-summary">
-                        <div class="cost-main">
-                            <span class="cost-amount">$0.00</span>
-                            <span class="cost-message">Calculating...</span>
-                        </div>
-                        <div class="cost-breakdown">
-                            <p>Total Characters: <span class="total-chars">0</span></p>
-                            <p>Within Quota: <span class="quota-chars">0</span></p>
-                            <p>Overage: <span class="overage-chars">0</span></p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Warning Display -->
-                <div id="cost-warnings" class="cost-warnings hidden">
-                    <div class="warning-content">
-                        <div class="warning-icon">⚠️</div>
-                        <div class="warning-details">
-                            <h4 class="warning-title">Cost Warning</h4>
-                            <p class="warning-message">This episode will incur overage charges.</p>
-                            <div class="warning-actions">
-                                <!-- Will be populated based on warning level -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Speaker Cost Breakdown -->
-                <div id="speaker-costs" class="speaker-breakdown">
-                    <h3>Character Cost Breakdown</h3>
-                    <div class="breakdown-table">
-                        <!-- Will be populated by JavaScript -->
-                    </div>
-                </div>
-                
-                <!-- Cost Optimization Suggestions -->
-                <div id="cost-suggestions" class="cost-suggestions hidden">
-                    <h3>Cost Optimization Suggestions</h3>
-                    <div class="suggestions-list">
-                        <!-- Will be populated by JavaScript -->
-                    </div>
-                </div>
-                
-                <!-- Monthly Projections -->
-                <div id="monthly-projections" class="projections hidden">
-                    <h3>Monthly Usage Projection</h3>
-                    <div class="projection-content">
-                        <!-- Will be populated by JavaScript -->
-                    </div>
-                </div>
-                
-                <div class="cost-actions">
-                    <button class="btn btn-primary" onclick="proceedToMapping()">Continue to Voice Mapping</button>
-                    <button class="btn btn-secondary" onclick="refreshCostAnalysis()">Refresh Analysis</button>
-                    <button class="btn btn-secondary" onclick="backToParse()">Back to Parse</button>
-                </div>
-            </section>
-            
             <!-- Speaker Mapping Section - Phase 3 -->
             <section id="mapping-section" class="section hidden">
                 <h2>Speaker to Voice Mapping</h2>
@@ -243,8 +160,6 @@
     <audio id="preview-player" hidden></audio>
     
     <script src="js/speaker-mapper.js"></script>
-    <script src="js/file-preview.js"></script>
-    <script src="js/cost-display.js"></script>
     <script src="js/app.js"></script>
 </body>
-</html> 
+</html>

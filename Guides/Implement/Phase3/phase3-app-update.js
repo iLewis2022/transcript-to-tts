@@ -1,6 +1,6 @@
 // Enhanced App.js with Speaker Mapping - frontend/js/app.js
 // Global state
-window.state = {
+const state = {
     currentFile: null,
     currentFileId: null,
     currentSessionId: null,
@@ -14,11 +14,6 @@ window.state = {
 // Initialize speaker mapper
 state.speakerMapper = new SpeakerMapper();
 
-// Export for file preview component
-window.fileUploader = {
-    resetUpload: () => resetUpload()
-};
-
 // DOM Elements
 const elements = {
     uploadZone: document.getElementById('upload-zone'),
@@ -26,7 +21,6 @@ const elements = {
     filePreview: document.getElementById('file-preview'),
     uploadSection: document.getElementById('upload-section'),
     parseSection: document.getElementById('parse-section'),
-    costSection: document.getElementById('cost-section'),
     mappingSection: document.getElementById('mapping-section'),
     serverStatus: document.getElementById('server-status'),
     proceedButton: document.getElementById('proceed-parse'),
@@ -241,17 +235,7 @@ async function proceedToParse() {
         }
         
         const data = await response.json();
-        
-        // Store the complete parse results including cost data
-        state.parseResults = {
-            ...data,
-            cost: data.cost,
-            speakerCosts: data.speakerCosts,
-            suggestions: data.suggestions,
-            monthlyProjection: data.monthlyProjection
-        };
-        
-        console.log('Parse results stored in state:', state.parseResults);
+        state.parseResults = data;
         
         // Display parse results
         displayParseResults(data);
@@ -270,7 +254,6 @@ function displayParseResults(results) {
     // Hide upload section, show parse section
     elements.uploadSection.classList.remove('active');
     elements.parseSection.classList.add('active');
-    elements.parseSection.classList.remove('hidden');
     
     // Build parse results HTML
     const parseHTML = `
@@ -432,8 +415,8 @@ async function confirmParse() {
             }
         }
         
-        // Proceed to Phase 4 - Cost Analysis
-        proceedToCostAnalysis();
+        // Proceed to Phase 3 - Speaker Mapping
+        proceedToMapping();
         
     } catch (error) {
         console.error('Validation error:', error);
@@ -441,349 +424,11 @@ async function confirmParse() {
     }
 }
 
-// Phase 4 - Comprehensive Cost Analysis Functions
-async function proceedToCostAnalysis() {
-    // Hide parse section, show cost section
-    elements.parseSection.classList.remove('active');
-    const costSection = document.getElementById('cost-section');
-    costSection.classList.add('active');
-    costSection.classList.remove('hidden');
-    
-    // Initialize comprehensive cost analysis
-    await loadComprehensiveCostAnalysis();
-}
-
-async function loadComprehensiveCostAnalysis() {
-    try {
-        // First, check if we already have the cost data from parse results
-        if (state.parseResults && state.parseResults.cost) {
-            console.log('Using existing cost data from parse results:', state.parseResults);
-            
-            // Use the data we already have from parse
-            const { cost, speakerCosts, suggestions, monthlyProjection } = state.parseResults;
-            
-            displayCostAnalysisUI(cost, speakerCosts, suggestions, monthlyProjection);
-            
-        } else {
-            // Fallback: fetch from API if we don't have the data
-            console.log('Fetching cost data from API...');
-            
-            const response = await fetch(`/api/process/parse/${state.currentSessionId}`);
-            const data = await response.json();
-            
-            console.log('Full cost response from API:', data);
-            
-            if (data.success) {
-                const { cost, speakerCosts, suggestions, monthlyProjection } = data;
-                
-                // Store the data in state for future use
-                state.parseResults.cost = cost;
-                state.parseResults.speakerCosts = speakerCosts;
-                state.parseResults.suggestions = suggestions;
-                state.parseResults.monthlyProjection = monthlyProjection;
-                
-                displayCostAnalysisUI(cost, speakerCosts, suggestions, monthlyProjection);
-                
-            } else {
-                throw new Error(data.error || 'Failed to load cost data');
-            }
-        }
-        
-    } catch (error) {
-        console.error('Failed to load comprehensive cost analysis:', error);
-        alert('Failed to load cost analysis. Please try again.');
-    }
-}
-
-// Helper function to display the cost analysis UI
-function displayCostAnalysisUI(cost, speakerCosts, suggestions, monthlyProjection) {
-    console.log('Displaying cost analysis with data:', { cost, speakerCosts, suggestions, monthlyProjection });
-    
-    // Use the comprehensive CostDisplay component
-    const costHtml = window.costDisplay.displayCostPreview(
-        { cost, suggestions },
-        speakerCosts,
-        monthlyProjection
-    );
-    
-    // Store current cost data for the component
-    window.costDisplay.currentCost = cost;
-    
-    // Update the cost section with the comprehensive display
-    let costAnalysisDiv = document.getElementById('cost-analysis-content');
-    if (!costAnalysisDiv) {
-        // Create the content div if it doesn't exist
-        const costSection = document.getElementById('cost-section');
-        costSection.innerHTML = `
-            <div class="section-header">
-                <h2>💰 Cost Analysis</h2>
-                <p>Review processing costs and quota usage before proceeding</p>
-            </div>
-            <div id="cost-analysis-content"></div>
-        `;
-        costAnalysisDiv = document.getElementById('cost-analysis-content');
-    }
-    
-    costAnalysisDiv.innerHTML = costHtml;
-    
-    // Start real-time cost updates
-    window.costDisplay.startCostUpdates(state.currentSessionId);
-}
-
-async function loadQuotaStatus() {
-    try {
-        const response = await fetch('/api/process/quota');
-        const data = await response.json();
-        
-        if (data.success) {
-            const usage = data.usage;
-            
-            // Update quota display
-            document.querySelector('.quota-current').textContent = usage.used.toLocaleString();
-            document.querySelector('.quota-total').textContent = usage.quota.toLocaleString();
-            document.querySelector('.quota-remaining').textContent = usage.remaining.toLocaleString();
-            document.querySelector('.quota-reset-date').textContent = formatResetDate(new Date(usage.resetDate));
-            
-            // Update quota bar
-            const quotaBar = document.querySelector('.quota-used');
-            quotaBar.style.width = `${usage.percentage}%`;
-            
-            // Color code based on usage
-            if (usage.percentage > 90) {
-                quotaBar.style.background = 'var(--error)';
-            } else if (usage.percentage > 75) {
-                quotaBar.style.background = 'var(--warning)';
-            } else {
-                quotaBar.style.background = 'var(--success)';
-            }
-            
-            state.quotaUsage = usage;
-        }
-    } catch (error) {
-        console.error('Failed to load quota status:', error);
-    }
-}
-
-async function loadEpisodeCost() {
-    try {
-        const response = await fetch(`/api/process/cost/${state.currentSessionId}`);
-        const data = await response.json();
-        
-        if (data.success) {
-            const cost = data.cost;
-            const breakdown = data.breakdown;
-            
-            // Update main cost display
-            const costAmount = document.querySelector('.cost-amount');
-            const costMessage = document.querySelector('.cost-message');
-            
-            costAmount.textContent = cost.details.cost;
-            costMessage.textContent = cost.message;
-            
-            // Style based on warning level
-            costAmount.className = 'cost-amount';
-            if (cost.warningLevel === 'critical' || cost.warningLevel === 'high') {
-                costAmount.classList.add('expensive');
-            } else if (cost.warningLevel === 'medium') {
-                costAmount.classList.add('moderate');
-            } else {
-                costAmount.classList.add('cheap');
-            }
-            
-            // Update breakdown
-            document.querySelector('.total-chars').textContent = cost.details.totalCharacters;
-            document.querySelector('.quota-chars').textContent = (parseInt(cost.details.totalCharacters.replace(/,/g, '')) - parseInt(cost.details.overageCharacters.replace(/,/g, ''))).toLocaleString();
-            document.querySelector('.overage-chars').textContent = cost.details.overageCharacters;
-            
-            // Display speaker breakdown
-            displaySpeakerBreakdown(breakdown);
-            
-            // Display suggestions if any
-            if (data.suggestions && data.suggestions.length > 0) {
-                displayCostSuggestions(data.suggestions);
-            }
-            
-            // Display projections
-            if (data.projections) {
-                displayMonthlyProjections(data.projections);
-            }
-            
-            state.costEstimate = data;
-        }
-    } catch (error) {
-        console.error('Failed to load episode cost:', error);
-    }
-}
-
-async function checkCostWarnings() {
-    try {
-        const response = await fetch(`/api/process/cost/${state.currentSessionId}/warnings`);
-        const data = await response.json();
-        
-        if (data.success && data.warningLevel !== 'none' && data.warningLevel !== 'low') {
-            displayCostWarning(data);
-        } else {
-            // Hide warning section
-            document.getElementById('cost-warnings').classList.add('hidden');
-        }
-    } catch (error) {
-        console.error('Failed to check cost warnings:', error);
-    }
-}
-
-function displayCostWarning(warningData) {
-    const warningsDiv = document.getElementById('cost-warnings');
-    const details = warningData.details;
-    
-    // Update warning content
-    document.querySelector('.warning-title').textContent = details.title;
-    document.querySelector('.warning-message').textContent = details.message;
-    document.querySelector('.warning-icon').textContent = details.icon;
-    
-    // Update warning actions
-    const actionsDiv = document.querySelector('.warning-actions');
-    actionsDiv.innerHTML = '';
-    
-    if (details.actions.includes('review')) {
-        actionsDiv.innerHTML += '<button class="btn btn-secondary" onclick="reviewCostDetails()">Review Details</button>';
-    }
-    if (details.actions.includes('split')) {
-        actionsDiv.innerHTML += '<button class="btn btn-secondary" onclick="suggestEpisodeSplit()">Split Episode</button>';
-    }
-    if (details.actions.includes('cancel')) {
-        actionsDiv.innerHTML += '<button class="btn btn-secondary" onclick="cancelProcessing()">Cancel Processing</button>';
-    }
-    
-    // Add continue button for non-blocking warnings
-    if (details.type !== 'strong') {
-        actionsDiv.innerHTML += '<button class="btn btn-primary" onclick="acknowledgeWarning()">Continue Anyway</button>';
-    }
-    
-    // Style warning based on level
-    warningsDiv.className = `cost-warnings ${warningData.warningLevel}`;
-    warningsDiv.classList.remove('hidden');
-}
-
-function displaySpeakerBreakdown(breakdown) {
-    const breakdownTable = document.querySelector('.breakdown-table');
-    
-    const breakdownHTML = `
-        <div class="breakdown-row" style="font-weight: bold; background: var(--bg-tertiary);">
-            <div class="breakdown-speaker">Speaker</div>
-            <div class="breakdown-chars">Characters</div>
-            <div class="breakdown-percentage">Percentage</div>
-            <div class="breakdown-cost">Est. Cost</div>
-        </div>
-        ${Object.entries(breakdown.speakers).map(([speaker, data]) => `
-            <div class="breakdown-row">
-                <div class="breakdown-speaker">${speaker}</div>
-                <div class="breakdown-chars">${data.characters.toLocaleString()}</div>
-                <div class="breakdown-percentage">${data.percentage}%</div>
-                <div class="breakdown-cost">${data.formattedCost || '$0.00'}</div>
-            </div>
-        `).join('')}
-    `;
-    
-    breakdownTable.innerHTML = breakdownHTML;
-}
-
-function displayCostSuggestions(suggestions) {
-    const suggestionsDiv = document.getElementById('cost-suggestions');
-    const suggestionsList = document.querySelector('.suggestions-list');
-    
-    const suggestionsHTML = suggestions.map(suggestion => `
-        <div class="suggestion-item">
-            <div class="suggestion-content">
-                <div class="suggestion-type">${suggestion.type.replace('-', ' ')}</div>
-                <p class="suggestion-message">${suggestion.message}</p>
-            </div>
-            ${suggestion.potentialSavings ? `<div class="suggestion-savings">Save ${formatCost(suggestion.potentialSavings)}</div>` : ''}
-        </div>
-    `).join('');
-    
-    suggestionsList.innerHTML = suggestionsHTML;
-    suggestionsDiv.classList.remove('hidden');
-}
-
-function displayMonthlyProjections(projections) {
-    const projectionsDiv = document.getElementById('monthly-projections');
-    const projectionContent = document.querySelector('.projection-content');
-    
-    const projectionHTML = `
-        <div class="projection-grid">
-            <div class="projection-item">
-                <div class="projection-value">${projections.currentDailyRate.toLocaleString()}</div>
-                <div class="projection-label">Daily Usage Rate</div>
-            </div>
-            <div class="projection-item">
-                <div class="projection-value">${projections.projectedTotal.toLocaleString()}</div>
-                <div class="projection-label">Projected Monthly Total</div>
-            </div>
-            <div class="projection-item">
-                <div class="projection-value">${projections.projectedOverage.toLocaleString()}</div>
-                <div class="projection-label">Projected Overage</div>
-            </div>
-            <div class="projection-item">
-                <div class="projection-value">${formatCost(projections.projectedCost)}</div>
-                <div class="projection-label">Projected Cost</div>
-            </div>
-        </div>
-        ${projections.willExceedQuota ? `
-            <div class="warning-item warning" style="margin-top: 20px;">
-                <span class="warning-icon">⚠️</span>
-                This episode will likely cause you to exceed your monthly quota.
-            </div>
-        ` : ''}
-    `;
-    
-    projectionContent.innerHTML = projectionHTML;
-    projectionsDiv.classList.remove('hidden');
-}
-
-async function refreshCostAnalysis() {
-    await loadCostAnalysis();
-}
-
-function reviewCostDetails() {
-    // Show detailed breakdown and suggestions
-    document.getElementById('speaker-costs').scrollIntoView({ behavior: 'smooth' });
-}
-
-function suggestEpisodeSplit() {
-    alert('Episode splitting functionality will be available in Phase 6. For now, consider editing the script manually to reduce length.');
-}
-
-function cancelProcessing() {
-    if (confirm('Are you sure you want to cancel? You will lose your current progress.')) {
-        startOver();
-    }
-}
-
-function acknowledgeWarning() {
-    // Hide warning and proceed
-    document.getElementById('cost-warnings').classList.add('hidden');
-}
-
-function formatCost(cost) {
-    if (cost === 0) return '$0.00';
-    if (cost < 0.01) return '<$0.01';
-    return `$${cost.toFixed(2)}`;
-}
-
-function formatResetDate(date) {
-    return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-    });
-}
-
 // Phase 3 - Speaker Mapping Functions
 async function proceedToMapping() {
     // Hide parse section, show mapping section
     elements.parseSection.classList.remove('active');
     elements.mappingSection.classList.add('active');
-    elements.mappingSection.classList.remove('hidden');
     
     // Show loading state
     document.getElementById('voice-loading').classList.remove('hidden');
@@ -1092,14 +737,13 @@ async function confirmMapping() {
     // Save mapping
     state.speakerMapper.saveMapping();
     
-    // Transition to Phase 4 - Cost Analysis (not Phase 5!)
-    proceedToCostAnalysis();
+    // TODO: Proceed to Phase 4 - Processing
+    alert('Mapping saved! Processing will be implemented in Phase 4.');
 }
 
 function backToParse() {
     elements.mappingSection.classList.remove('active');
     elements.parseSection.classList.add('active');
-    elements.parseSection.classList.remove('hidden');
 }
 
 function adjustSettings() {
@@ -1113,7 +757,6 @@ function startOver() {
         elements.parseSection.classList.remove('active');
         elements.mappingSection.classList.remove('active');
         elements.uploadSection.classList.add('active');
-        elements.uploadSection.classList.remove('hidden');
     }
 }
 
@@ -1141,20 +784,6 @@ function formatFileSize(bytes) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-// Helper function for backward compatibility with the costDisplay component
-function backToMapping() {
-    // Stop cost updates
-    if (window.costDisplay) {
-        window.costDisplay.stopCostUpdates();
-    }
-    
-    // Navigate back to mapping section
-    document.getElementById('cost-section').classList.remove('active');
-    document.getElementById('cost-section').classList.add('hidden');
-    document.getElementById('mapping-section').classList.add('active');
-    document.getElementById('mapping-section').classList.remove('hidden');
-}
-
 // Make functions globally available
 window.toggleRemovedContent = toggleRemovedContent;
 window.confirmParse = confirmParse;
@@ -1172,4 +801,4 @@ window.closeHistoryModal = closeHistoryModal;
 window.exportMapping = exportMapping;
 window.importMapping = importMapping;
 window.confirmMapping = confirmMapping;
-window.backToParse = backToParse; 
+window.backToParse = backToParse;
