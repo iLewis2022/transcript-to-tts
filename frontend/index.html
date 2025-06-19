@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campaign TTS Processor</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Campaign TTS Processor</h1>
+            <p>Convert D&D scripts to character audio files</p>
+        </header>
+        
+        <main>
+            <div class="status-card">
+                <h2>Server Status</h2>
+                <div id="server-status">Checking...</div>
+            </div>
+            
+            <div class="info-card">
+                <h2>System Info</h2>
+                <div id="system-info">Loading...</div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // Test server connection
+        async function checkStatus() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                
+                document.getElementById('server-status').innerHTML = `
+                    <span class="status-ok">✓ Server Running</span>
+                    <br>Environment: ${data.environment}
+                    <br>Version: ${data.version}
+                `;
+                
+                // Get detailed status
+                const statusResponse = await fetch('/api/status');
+                const status = await statusResponse.json();
+                
+                document.getElementById('system-info').innerHTML = `
+                    ElevenLabs: ${status.elevenLabs.configured ? '✓ Configured' : '✗ Not configured'}
+                    <br>Quota: ${status.elevenLabs.quota.toLocaleString()} characters
+                    <br>Upload Dir: ${status.directories.upload}
+                `;
+            } catch (error) {
+                document.getElementById('server-status').innerHTML = 
+                    '<span class="status-error">✗ Server Not Responding</span>';
+            }
+        }
+        
+        // Check status on load
+        checkStatus();
+        
+        // Refresh every 5 seconds
+        setInterval(checkStatus, 5000);
+    </script>
+</body>
+</html> 

@@ -1,0 +1,59 @@
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../../.env') });
+
+// Validate required environment variables
+const requiredEnvVars = [
+  'ELEVENLABS_API_KEY',
+  'ELEVENLABS_SUBSCRIPTION_QUOTA'
+];
+
+const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+if (missingVars.length > 0) {
+  console.error(`Missing required environment variables: ${missingVars.join(', ')}`);
+  console.error('Please check your .env file');
+  process.exit(1);
+}
+
+module.exports = {
+  // Server Configuration
+  port: process.env.PORT || 3000,
+  nodeEnv: process.env.NODE_ENV || 'development',
+  
+  // ElevenLabs Configuration
+  elevenLabs: {
+    apiKey: process.env.ELEVENLABS_API_KEY,
+    subscriptionQuota: parseInt(process.env.ELEVENLABS_SUBSCRIPTION_QUOTA) || 1000000,
+    model: process.env.ELEVENLABS_MODEL || 'eleven_monolingual_v1',
+    voiceSettings: {
+      stability: parseFloat(process.env.VOICE_STABILITY) || 0.75,
+      similarity_boost: parseFloat(process.env.VOICE_SIMILARITY) || 0.75,
+      style: parseFloat(process.env.VOICE_STYLE) || 0.5,
+      use_speaker_boost: process.env.VOICE_SPEAKER_BOOST !== 'false'
+    }
+  },
+  
+  // File Configuration
+  files: {
+    maxSize: parseInt(process.env.MAX_FILE_SIZE) || 10 * 1024 * 1024, // 10MB default
+    uploadDir: path.resolve(process.env.UPLOAD_DIR || './uploads'),
+    outputDir: path.resolve(process.env.OUTPUT_DIR || './outputs'),
+    allowedTypes: ['text/plain', 'text/markdown', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword']
+  },
+  
+  // Processing Configuration
+  processing: {
+    maxChunkSize: parseInt(process.env.MAX_CHUNK_SIZE) || 1000,
+    minChunkSize: parseInt(process.env.MIN_CHUNK_SIZE) || 700,
+    retryAttempts: parseInt(process.env.RETRY_ATTEMPTS) || 3,
+    retryDelay: parseInt(process.env.RETRY_DELAY) || 1000
+  },
+  
+  // Cost Configuration
+  costs: {
+    perCharacter: parseFloat(process.env.COST_PER_CHARACTER) || 0.00003, // $30 per 1M chars
+    warningThresholds: {
+      soft: parseFloat(process.env.WARNING_THRESHOLD_SOFT) || 100,
+      hard: parseFloat(process.env.WARNING_THRESHOLD_HARD) || 250
+    }
+  }
+}; 
