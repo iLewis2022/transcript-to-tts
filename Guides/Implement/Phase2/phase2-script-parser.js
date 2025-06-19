@@ -6,7 +6,7 @@ class ScriptParser {
         // Enhanced regex patterns for speaker detection
         this.speakerPatterns = [
             {
-                pattern: /^\*\*([A-Z][A-Z\s\-\(\)]*?):\*\*\s*/gm,
+                pattern: /^\*\*([A-Z][A-Z\s\-\(\)]+?)\*\*\s*:/gm,
                 name: 'bold-speaker'
             },
             {
@@ -369,4 +369,4 @@ class ScriptParser {
     }
 }
 
-module.exports = ScriptParser; 
+module.exports = ScriptParser;

@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs').promises;
 const config = require('../config/environment');
 const logger = require('../utils/logger');
+const fileManager = require('../utils/file-manager');
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -40,7 +41,7 @@ const upload = multer({
     }
 });
 
-// Upload endpoint
+// Upload and process endpoint
 router.post('/', upload.single('script'), async (req, res) => {
     try {
         if (!req.file) {
@@ -49,35 +50,62 @@ router.post('/', upload.single('script'), async (req, res) => {
         
         logger.info(`File uploaded: ${req.file.originalname} (${req.file.size} bytes)`);
         
-        // Return file info
+        // Process the uploaded file
+        const result = await fileManager.processUploadedFile(req.file);
+        
+        // Return processed file info
         res.json({
             success: true,
             file: {
-                id: req.file.filename,
-                originalName: req.file.originalname,
-                size: req.file.size,
-                path: req.file.path
+                id: result.sessionId,
+                ...result.fileInfo
             }
         });
     } catch (error) {
-        logger.error('Upload error:', error);
+        logger.error('Upload/processing error:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
-// Get uploaded file info
-router.get('/:fileId', async (req, res) => {
+// Get file preview
+router.get('/:sessionId/preview', async (req, res) => {
     try {
-        const filePath = path.join(config.files.uploadDir, 'temp', req.params.fileId);
-        const stats = await fs.stat(filePath);
-        
+        const preview = await fileManager.getFilePreview(req.params.sessionId);
         res.json({
-            id: req.params.fileId,
-            size: stats.size,
-            uploaded: stats.birthtime
+            success: true,
+            ...preview
         });
     } catch (error) {
-        res.status(404).json({ error: 'File not found' });
+        logger.error('Preview error:', error);
+        res.status(404).json({ error: error.message });
+    }
+});
+
+// Get session info
+router.get('/:sessionId', async (req, res) => {
+    try {
+        const session = await fileManager.getSession(req.params.sessionId);
+        res.json({
+            success: true,
+            session: fileManager.sanitizeFileInfo(session)
+        });
+    } catch (error) {
+        logger.error('Session error:', error);
+        res.status(404).json({ error: error.message });
+    }
+});
+
+// Delete session and cleanup files
+router.delete('/:sessionId', async (req, res) => {
+    try {
+        await fileManager.cleanup(req.params.sessionId);
+        res.json({
+            success: true,
+            message: 'Session cleaned up'
+        });
+    } catch (error) {
+        logger.error('Cleanup error:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 

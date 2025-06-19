@@ -11,54 +11,56 @@
         <header>
             <h1>Campaign TTS Processor</h1>
             <p>Convert D&D scripts to character audio files</p>
+            <div class="server-status" id="server-status">
+                <span class="status-indicator"></span>
+                <span class="status-text">Checking server...</span>
+            </div>
         </header>
         
         <main>
-            <div class="status-card">
-                <h2>Server Status</h2>
-                <div id="server-status">Checking...</div>
-            </div>
+            <!-- Upload Section -->
+            <section id="upload-section" class="section active">
+                <div class="upload-zone" id="upload-zone">
+                    <input type="file" id="file-input" accept=".md,.txt,.doc,.docx" hidden>
+                    <div class="upload-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                    </div>
+                    <h3>Drop your episode script here</h3>
+                    <p>or <button class="browse-button" onclick="document.getElementById('file-input').click()">browse files</button></p>
+                    <p class="supported-formats">Supports: MD, TXT, DOC, DOCX</p>
+                </div>
+                
+                <div id="file-preview" class="file-preview hidden">
+                    <div class="file-info">
+                        <h3>File Uploaded</h3>
+                        <p class="file-name"></p>
+                        <p class="file-size"></p>
+                        <p class="file-type"></p>
+                    </div>
+                    <div class="file-content">
+                        <h4>Preview (first 500 characters)</h4>
+                        <pre class="content-preview"></pre>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn btn-primary" id="proceed-parse">Proceed to Parse</button>
+                        <button class="btn btn-secondary" id="upload-different">Upload Different File</button>
+                    </div>
+                </div>
+            </section>
             
-            <div class="info-card">
-                <h2>System Info</h2>
-                <div id="system-info">Loading...</div>
-            </div>
+            <!-- Parse Section (hidden initially) -->
+            <section id="parse-section" class="section">
+                <h2>Parse Results</h2>
+                <div id="parse-results"></div>
+            </section>
         </main>
     </div>
     
-    <script>
-        // Test server connection
-        async function checkStatus() {
-            try {
-                const response = await fetch('/api/health');
-                const data = await response.json();
-                
-                document.getElementById('server-status').innerHTML = `
-                    <span class="status-ok">✓ Server Running</span>
-                    <br>Environment: ${data.environment}
-                    <br>Version: ${data.version}
-                `;
-                
-                // Get detailed status
-                const statusResponse = await fetch('/api/status');
-                const status = await statusResponse.json();
-                
-                document.getElementById('system-info').innerHTML = `
-                    ElevenLabs: ${status.elevenLabs.configured ? '✓ Configured' : '✗ Not configured'}
-                    <br>Quota: ${status.elevenLabs.quota.toLocaleString()} characters
-                    <br>Upload Dir: ${status.directories.upload}
-                `;
-            } catch (error) {
-                document.getElementById('server-status').innerHTML = 
-                    '<span class="status-error">✗ Server Not Responding</span>';
-            }
-        }
-        
-        // Check status on load
-        checkStatus();
-        
-        // Refresh every 5 seconds
-        setInterval(checkStatus, 5000);
-    </script>
+    <script src="js/file-preview.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html> 
