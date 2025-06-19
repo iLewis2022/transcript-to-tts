@@ -1,5 +1,9 @@
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '../../.env') });
+console.log('Loading environment config...');
+const envPath = path.resolve(__dirname, '../../.env');
+console.log('Looking for .env at:', envPath);
+require('dotenv').config();
+console.log('API Key from env:', process.env.ELEVENLABS_API_KEY ? 'Found' : 'NOT FOUND');
 
 // Validate required environment variables
 const requiredEnvVars = [
@@ -38,6 +42,13 @@ module.exports = {
     uploadDir: path.resolve(process.env.UPLOAD_DIR || './uploads'),
     outputDir: path.resolve(process.env.OUTPUT_DIR || './outputs'),
     allowedTypes: ['text/plain', 'text/markdown', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword']
+  },
+  
+  // Path Configuration - Phase 6
+  paths: {
+    uploads: path.resolve(process.env.UPLOAD_DIR || './uploads'),
+    outputs: path.resolve(process.env.OUTPUT_DIR || './outputs'),
+    temp: path.resolve(process.env.TEMP_DIR || './temp')
   },
   
   // Processing Configuration

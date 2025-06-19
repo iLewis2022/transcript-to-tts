@@ -316,10 +316,8 @@ class CostDisplay {
                 // Stop cost updates
                 this.stopCostUpdates();
                 
-                // Proceed to Phase 5
-                alert('Cost approved! Ready for Phase 5 - Processing Engine (not yet implemented)');
-                
-                // TODO: Call proceedToProcessing() when Phase 5 is ready
+                // Proceed to Phase 5 - TTS Processing
+                window.proceedToProcessing();
             }
         } catch (error) {
             console.error('Cost confirmation error:', error);
@@ -380,6 +378,8 @@ class CostDisplay {
     formatCost(amount) {
         return amount < 0.01 ? '<$0.01' : `$${amount.toFixed(2)}`;
     }
+
+
 
     getSuggestionIcon(type) {
         const icons = {

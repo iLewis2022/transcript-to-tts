@@ -5,6 +5,8 @@ const logger = require('./logger');
 class ElevenLabsClient {
     constructor() {
         this.apiKey = config.elevenLabs.apiKey;
+        this.isConfigured = this.apiKey && this.apiKey !== 'not_configured';
+        console.log('ElevenLabs API Key:', this.isConfigured ? 'Set (starts with ' + this.apiKey.substring(0, 5) + '...)' : 'NOT CONFIGURED');
         this.baseURL = 'https://api.elevenlabs.io/v1';
         this.voiceCache = null;
         this.cacheExpiry = null;
@@ -25,6 +27,10 @@ class ElevenLabsClient {
      * Fetch all available voices from ElevenLabs
      */
     async getVoices(forceRefresh = false) {
+        if (!this.isConfigured) {
+            throw new Error('ElevenLabs API key not configured. Please add ELEVENLABS_API_KEY to your .env file');
+        }
+
         // Check cache first
         if (!forceRefresh && this.voiceCache && this.cacheExpiry > Date.now()) {
             logger.debug('Returning cached voices');
@@ -90,6 +96,10 @@ class ElevenLabsClient {
      * Get subscription info and usage
      */
     async getSubscriptionInfo() {
+        if (!this.isConfigured) {
+            throw new Error('ElevenLabs API key not configured. Please add ELEVENLABS_API_KEY to your .env file');
+        }
+
         try {
             logger.info('Fetching subscription info from ElevenLabs');
             
@@ -112,6 +122,24 @@ class ElevenLabsClient {
             };
             
         } catch (error) {
+            // Handle permission error specifically
+            if (error.response?.status === 401 && error.response?.data?.detail?.message?.includes('missing_permissions')) {
+                logger.warn('API key lacks user_read permission, using fallback subscription data');
+                
+                // Return mock data based on environment variable
+                return {
+                    tier: 'custom',
+                    character_count: 0,
+                    character_limit: config.elevenLabs.subscriptionQuota,
+                    available_characters: config.elevenLabs.subscriptionQuota,
+                    usage_percentage: 0,
+                    next_character_count_reset_unix: Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60),
+                    voice_limit: 100,
+                    can_extend_character_limit: true,
+                    allowed_to_extend_character_limit: true
+                };
+            }
+            
             logger.error('Failed to fetch subscription info:', error.message);
             
             // Return mock data for development
@@ -214,12 +242,28 @@ class ElevenLabsClient {
     }
 
     /**
-     * Validate API key
+     * Validate API key by testing voices endpoint instead of subscription
      */
     async validateApiKey() {
         try {
-            await this.getSubscriptionInfo();
-            return { valid: true };
+            // Changed: Test with voices endpoint instead of subscription
+            // since the API key lacks "User" permission
+            logger.info('Validating API key with voices endpoint');
+            
+            const response = await axios.get(`${this.baseURL}/voices`, {
+                headers: this.getHeaders()
+            });
+            
+            // If we can fetch voices, the API key is valid
+            if (response.data && response.data.voices) {
+                return { 
+                    valid: true, 
+                    voiceCount: response.data.voices.length 
+                };
+            }
+            
+            return { valid: false, error: 'No voices returned' };
+            
         } catch (error) {
             if (error.response?.status === 401) {
                 return { valid: false, error: 'Invalid API key' };

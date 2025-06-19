@@ -1,6 +1,6 @@
 {
   "name": "campaign-tts-processor",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Convert D&D campaign scripts to individual character audio files using ElevenLabs TTS. Features intelligent speaker detection, voice mapping with previews, and automated processing pipeline.",
   "main": "backend/server.js",
   "scripts": {
@@ -40,6 +40,7 @@
     "npm": ">=7.0.0"
   },
   "dependencies": {
+    "archiver": "^6.0.2",
     "axios": "^1.10.0",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -59,10 +60,11 @@
   "phase_status": {
     "phase_1": "✅ Complete - File Upload & Basic Processing",
     "phase_2": "✅ Complete - Script Parsing & Analysis",
-    "phase_3_1": "✅ Complete - Voice Management & Mapping",
-    "phase_3_2": "✅ Complete - Speaker Mapping Interface",
-    "phase_3_3": "✅ Complete - Voice Preview & Settings",
-    "phase_4": "🚧 In Development - TTS Processing Pipeline",
-    "phase_5": "📋 Planned - Audio Post-Processing & Export"
+    "phase_3": "✅ Complete - Voice Management & Speaker Mapping",
+    "phase_4": "✅ Complete - Cost Analysis & Warnings",
+    "phase_5": "✅ Complete - TTS Processing Engine",
+    "phase_6": "✅ Complete - File Management & Output",
+    "phase_7": "📋 Planned - Advanced Features",
+    "phase_8": "📋 Planned - Testing & Deployment"
   }
 }

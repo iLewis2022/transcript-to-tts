@@ -790,18 +790,30 @@ async function proceedToMapping() {
     document.getElementById('mapping-table').classList.add('hidden');
     
     try {
-        // Fetch available voices
+        // Fetch available voices FIRST and wait for completion
+        console.log('[DEBUG] Fetching voices...');
         await state.speakerMapper.fetchVoices();
+        console.log('[DEBUG] Voices fetched:', state.speakerMapper.availableVoices.length);
+        
+        // Verify voices were loaded
+        if (!state.speakerMapper.availableVoices || state.speakerMapper.availableVoices.length === 0) {
+            throw new Error('No voices available. Please check your ElevenLabs API key permissions.');
+        }
         
         // Try to load previous mapping
         state.speakerMapper.loadMapping();
         
-        // Display mapping interface
+        // Display mapping interface AFTER voices are loaded
         displayMappingInterface();
         
     } catch (error) {
         console.error('Failed to load voices:', error);
         alert(`Failed to load voices: ${error.message}\nPlease check your ElevenLabs API key.`);
+        
+        // Go back to parse section on error
+        elements.mappingSection.classList.remove('active');
+        elements.mappingSection.classList.add('hidden');
+        elements.parseSection.classList.add('active');
     } finally {
         document.getElementById('voice-loading').classList.add('hidden');
     }
@@ -810,6 +822,24 @@ async function proceedToMapping() {
 function displayMappingInterface() {
     const speakers = state.parseResults.preview.speakerList.map(s => s.name);
     const mappingTable = document.getElementById('mapping-table');
+    
+    // Check if voices are available
+    if (!state.speakerMapper.availableVoices || state.speakerMapper.availableVoices.length === 0) {
+        mappingTable.innerHTML = `
+            <div class="error-message">
+                <h3>No voices available</h3>
+                <p>Unable to load voices from ElevenLabs. Please check:</p>
+                <ul>
+                    <li>Your API key has "Voices: Read only" permission</li>
+                    <li>Your ElevenLabs account is active</li>
+                    <li>You have not exceeded rate limits</li>
+                </ul>
+                <button class="btn btn-primary" onclick="retryLoadVoices()">Retry</button>
+            </div>
+        `;
+        mappingTable.classList.remove('hidden');
+        return;
+    }
     
     // Build mapping table HTML
     const tableHTML = `
@@ -858,6 +888,9 @@ function displayMappingInterface() {
     
     mappingTable.innerHTML = tableHTML;
     mappingTable.classList.remove('hidden');
+    
+    // Log for debugging
+    console.log('[DEBUG] Mapping interface displayed with', state.speakerMapper.availableVoices.length, 'voices');
     
     // Validate mapping
     validateMapping();
@@ -1155,6 +1188,22 @@ function backToMapping() {
     document.getElementById('mapping-section').classList.remove('hidden');
 }
 
+// Add retry function
+async function retryLoadVoices() {
+    document.getElementById('voice-loading').classList.remove('hidden');
+    document.getElementById('mapping-table').classList.add('hidden');
+    
+    try {
+        await state.speakerMapper.fetchVoices();
+        displayMappingInterface();
+    } catch (error) {
+        console.error('Retry failed:', error);
+        alert('Failed to load voices. Please check your API key.');
+    } finally {
+        document.getElementById('voice-loading').classList.add('hidden');
+    }
+}
+
 // Make functions globally available
 window.toggleRemovedContent = toggleRemovedContent;
 window.confirmParse = confirmParse;
@@ -1172,4 +1221,109 @@ window.closeHistoryModal = closeHistoryModal;
 window.exportMapping = exportMapping;
 window.importMapping = importMapping;
 window.confirmMapping = confirmMapping;
-window.backToParse = backToParse; 
+window.backToParse = backToParse;
+window.retryLoadVoices = retryLoadVoices;
+
+// Proceed to Processing - Phase 5
+async function proceedToProcessing() {
+    // Hide cost section, show processing section
+    const costSection = document.getElementById('cost-section');
+    costSection.classList.remove('active');
+    costSection.classList.add('hidden');
+    
+    const processingSection = document.getElementById('processing-section');
+    processingSection.classList.add('active');
+    processingSection.classList.remove('hidden');
+    
+    try {
+        // Start processing
+        const response = await fetch('/api/processing/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                sessionId: state.currentSessionId,
+                speakerMapping: state.speakerMapper.getSpeakerMapping()
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Initialize processing UI
+            window.processingUI.initializeUI(data.sessionId, data.queueInfo);
+        } else {
+            throw new Error(data.error);
+        }
+        
+    } catch (error) {
+        console.error('Failed to start processing:', error);
+        alert(`Failed to start processing: ${error.message}`);
+    }
+}
+
+// Phase 6 functions - File Download & Management
+async function proceedToDownload() {
+    console.log('[DEBUG] proceedToDownload called');
+    console.log('[DEBUG] Current sessionId:', state.currentSessionId);
+    console.log('[DEBUG] fileDownloadManager available:', !!window.fileDownloadManager);
+    
+    const sessionId = state.currentSessionId;
+    if (!sessionId) {
+        console.error('[ERROR] No active session found');
+        alert('No active session found');
+        return;
+    }
+    
+    if (!window.fileDownloadManager) {
+        console.error('[ERROR] fileDownloadManager not available');
+        alert('Download manager not loaded');
+        return;
+    }
+    
+    try {
+        console.log('[DEBUG] Initializing download manager...');
+        const initialized = await window.fileDownloadManager.initialize(sessionId);
+        console.log('[DEBUG] Download manager initialized:', initialized);
+        
+        if (initialized) {
+            console.log('[DEBUG] Showing download interface...');
+            await window.fileDownloadManager.showDownloadInterface();
+            window.fileDownloadManager.setupFilters();
+            console.log('[DEBUG] Download interface setup complete');
+        } else {
+            console.error('[ERROR] Failed to initialize download manager');
+            alert('Failed to load download information');
+        }
+    } catch (error) {
+        console.error('[ERROR] Download error:', error);
+        alert(`Download error: ${error.message}`);
+    }
+}
+
+function viewProcessingDetails() {
+    // Show processing log and details
+    const logSection = document.querySelector('.processing-log-section');
+    if (logSection) {
+        logSection.scrollIntoView({ behavior: 'smooth' });
+    } else {
+        alert('Processing details not available');
+    }
+}
+
+function startNewEpisode() {
+    if (confirm('Start processing a new episode? This will reset the current session.')) {
+        location.reload();
+    }
+}
+
+async function proceedToPartialDownload() {
+    // Same as proceedToDownload - handles partial processing results
+    await proceedToDownload();
+}
+
+// Make Phase 5 functions globally available
+window.proceedToProcessing = proceedToProcessing;
+window.proceedToDownload = proceedToDownload;
+window.viewProcessingDetails = viewProcessingDetails;
+window.startNewEpisode = startNewEpisode;
+window.proceedToPartialDownload = proceedToPartialDownload; 

@@ -8,30 +8,53 @@ class SpeakerMapper {
     }
 
     /**
-     * Fetch voices from ElevenLabs - Phase 3.1.1
+     * Fetch voices from ElevenLabs with retry logic
      */
-    async fetchVoices() {
+    async fetchVoices(retryCount = 0) {
         try {
             this.isLoading = true;
+            
+            // Add a small delay on first attempt to ensure backend is ready
+            if (retryCount === 0) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
             const response = await fetch('/api/elevenlabs/voices');
             const data = await response.json();
             
             if (!response.ok) {
+                // If it's a 401 on first attempt, retry once
+                if (response.status === 401 && retryCount === 0) {
+                    console.log('[DEBUG] Got 401 on first attempt, retrying...');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    return this.fetchVoices(1);
+                }
+                
                 if (response.status === 401) {
                     throw new Error('Invalid API key. Please check your ElevenLabs API key.');
                 }
+                
                 // Use fallback voices if available
                 if (data.fallbackVoices) {
                     this.availableVoices = data.fallbackVoices;
                     return this.availableVoices;
                 }
+                
                 throw new Error(data.error || 'Failed to fetch voices');
             }
             
             this.availableVoices = data.voices;
+            console.log('[DEBUG] Successfully loaded', this.availableVoices.length, 'voices');
             return this.availableVoices;
             
         } catch (error) {
+            // On network error, retry once
+            if (retryCount === 0 && !error.message.includes('API key')) {
+                console.log('[DEBUG] Network error, retrying...');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                return this.fetchVoices(1);
+            }
+            
             console.error('Failed to fetch voices:', error);
             throw error;
         } finally {

@@ -9,6 +9,8 @@ const { setupApplication } = require('./utils/setup');
 const uploadRoutes = require('./routes/upload');
 const processRoutes = require('./routes/process');
 const elevenLabsRoutes = require('./routes/elevenlabs');
+const processingRoutes = require('./routes/processing');
+const downloadRoutes = require('./routes/download');
 
 // Create Express app
 const app = express();
@@ -31,6 +33,8 @@ app.use((req, res, next) => {
 app.use('/api/upload', uploadRoutes);
 app.use('/api/process', processRoutes);
 app.use('/api/elevenlabs', elevenLabsRoutes);
+app.use('/api/processing', processingRoutes);
+app.use('/api/download', downloadRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

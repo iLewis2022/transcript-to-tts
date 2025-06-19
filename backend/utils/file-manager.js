@@ -342,6 +342,25 @@ class FileManager {
         return filePath;
     }
 
+    /**
+     * Save processing metadata - Phase 6.1.2
+     */
+    async saveMetadata(episodeDir, metadata) {
+        try {
+            const metadataPath = path.join(episodeDir, 'metadata.json');
+            await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2));
+            
+            logger.info(`Saved metadata: ${metadataPath}`);
+            return {
+                success: true,
+                path: metadataPath
+            };
+        } catch (error) {
+            logger.error('Failed to save metadata:', error);
+            throw error;
+        }
+    }
+
     async generateFilename(speaker, index, extension = 'mp3') {
         const sanitizedSpeaker = speaker
             .toLowerCase()

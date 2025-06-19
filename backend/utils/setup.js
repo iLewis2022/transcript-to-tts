@@ -7,7 +7,7 @@ async function ensureDirectories() {
   const directories = [
     config.files.uploadDir,
     config.files.outputDir,
-    path.join(config.files.uploadDir, 'temp')
+    config.paths.temp
   ];
   
   for (const dir of directories) {
