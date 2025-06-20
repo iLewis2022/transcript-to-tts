@@ -29,8 +29,8 @@ class SessionRecovery {
                 // Start auto-save
                 this.startAutoSave();
                 
-                // Check for recoverable sessions
-                this.checkForRecoverableSessions();
+                // Check for recoverable sessions (DISABLED - uncomment to re-enable)
+                // this.checkForRecoverableSessions();
                 
                 resolve();
             };

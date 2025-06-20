@@ -15,6 +15,8 @@ const downloadRoutes = require('./routes/download');
 const editRoutes = require('./routes/edit');
 const templatesRoutes = require('./routes/templates');
 const ttsEnhancedRoutes = require('./routes/tts-enhanced');
+// SFX Module routes
+const sfxRoutes = require('./routes/sfx-routes');
 
 // Create Express app
 const app = express();
@@ -43,6 +45,8 @@ app.use('/api/download', downloadRoutes);
 app.use('/api/edit', editRoutes);
 app.use('/api/templates', templatesRoutes);
 app.use('/api/tts', ttsEnhancedRoutes);
+// SFX Module routes
+app.use(sfxRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

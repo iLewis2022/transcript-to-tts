@@ -18,7 +18,15 @@
         </header>
         
         <main>
-            <!-- Upload Section -->
+            <!-- Tab Navigation -->
+            <nav class="workflow-nav">
+                <button class="nav-tab active" data-tab="dialogue">Dialogue Processing</button>
+                <button class="nav-tab" data-tab="sfx">Sound Effects</button>
+            </nav>
+
+            <!-- Dialogue Module (existing workflow) -->
+            <div id="dialogue-module" class="module-container">
+                <!-- Upload Section -->
             <section id="upload-section" class="section active">
                 <div class="upload-zone" id="upload-zone">
                     <input type="file" id="file-input" accept=".md,.txt,.doc,.docx" hidden>
@@ -228,13 +236,326 @@
                     <!-- Will be populated by processing-ui.js -->
                 </div>
             </section>
+            </div> <!-- End dialogue-module -->
+
+            <!-- Sound Effects Module -->
+            <div id="sfx-module" class="module-container hidden">
+                <!-- Script Loading Section -->
+                <section id="sfx-script-section" class="section">
+                    <div class="section-header">
+                        <h2>📄 1. Script</h2>
+                        <button id="sfx-help-btn" class="help-button" title="Show SFX & Music Prompts">?</button>
+                    </div>
+                    <div class="script-options">
+                        <p>Current script: <span id="sfx-script-name" class="filename-display">None loaded</span></p>
+                        <div class="script-buttons">
+                            <button id="load-from-dialogue" class="secondary-button">Load from Dialogue Tab</button>
+                            <span class="button-separator">or</span>
+                            <label for="sfx-file-input" class="primary-button file-upload-btn">
+                                📁 Upload Script Directly
+                                <input type="file" id="sfx-file-input" accept=".md,.txt,.doc,.docx" hidden>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="sfx-script-preview" class="hidden">
+                        <h3>Script Preview</h3>
+                        <pre id="sfx-script-content" class="script-preview"></pre>
+                    </div>
+                </section>
+                
+                <!-- LLM Prompt Section -->
+                <section id="sfx-prompt-section" class="section hidden">
+                    <h2>🤖 2. LLM Analysis Prompt</h2>
+                    <div class="info-box">
+                        <p>Copy this prompt and paste it into Claude or ChatGPT:</p>
+                    </div>
+                    <div class="prompt-container">
+                        <pre id="llm-prompt" class="prompt-display"></pre>
+                        <div class="button-group">
+                            <button id="copy-prompt" class="primary-button">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                Copy to Clipboard
+                            </button>
+                            <span id="copy-feedback" class="copy-feedback hidden">Copied!</span>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Response Input Section -->
+                <section id="sfx-response-section" class="section hidden">
+                    <h2>📋 3. Paste LLM Response</h2>
+                    <div class="info-box">
+                        <p>Paste the complete response from Claude/ChatGPT here:</p>
+                    </div>
+                    <textarea 
+                        id="llm-response" 
+                        class="large-textarea" 
+                        placeholder="Paste the LLM response here..."
+                        rows="10"
+                    ></textarea>
+                    <button id="parse-response" class="primary-button">Parse Response</button>
+                    <div id="parse-error" class="error-message hidden"></div>
+                </section>
+                
+                <!-- Sound Effects List Section -->
+                <section id="sfx-list-section" class="section hidden">
+                    <h2>🎵 4. Sound Effects & Music</h2>
+                    
+                    <!-- SFX Stats -->
+                    <div id="sfx-stats" class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-sfx">0</div>
+                            <div class="stat-label">Total Effects</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-music">0</div>
+                            <div class="stat-label">Music Cues</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="estimated-cost">$0.00</div>
+                            <div class="stat-label">Est. Cost</div>
+                        </div>
+                    </div>
+                    
+                    <!-- SFX List -->
+                    <div class="sfx-container">
+                        <h3>Sound Effects</h3>
+                        <div id="sfx-list" class="sfx-list"></div>
+                    </div>
+                    
+                    <!-- Music Suggestions -->
+                    <div class="music-container">
+                        <h3>🎵 Music Suggestions (for SUNO)</h3>
+                        <div id="music-suggestions" class="music-suggestions"></div>
+                    </div>
+                </section>
+                
+                <!-- Generation Section -->
+                <section id="sfx-generation-section" class="section hidden">
+                    <h2>⚡ 5. Generate Sound Effects</h2>
+                    
+                    <div class="generation-controls">
+                        <button id="generate-all" class="primary-button large-button">
+                            Generate All Sound Effects
+                        </button>
+                        <button id="cancel-generation" class="secondary-button hidden">
+                            Cancel Generation
+                        </button>
+                    </div>
+                    
+                    <!-- Progress Display -->
+                    <div id="generation-progress" class="generation-progress hidden">
+                        <div class="progress-header">
+                            <span>Generating: </span>
+                            <span id="current-sfx-name">...</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-stats">
+                            <span id="progress-text">0 / 0</span>
+                            <span id="progress-percentage">0%</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Generation Log -->
+                    <div id="generation-log" class="generation-log hidden">
+                        <h4>Generation Log</h4>
+                        <div id="log-entries" class="log-entries"></div>
+                    </div>
+                </section>
+                
+                <!-- Download Section -->
+                <section id="sfx-download-section" class="section hidden">
+                    <h2>💾 6. Download</h2>
+                    <div class="download-ready">
+                        <p>Your sound effects are ready!</p>
+                        <button id="download-sfx" class="primary-button large-button">
+                            Download SFX Package
+                        </button>
+                        <button id="download-music-prompts" class="secondary-button">
+                            Download Music Prompts
+                        </button>
+                    </div>
+                </section>
+            </div> <!-- End sfx-module -->
+
+            <!-- SFX Help Modal -->
+            <div id="sfx-help-modal" class="modal hidden">
+                <div class="modal-content large">
+                    <div class="modal-header">
+                        <h3>🎵 Sound Effects & Music Generation Guide</h3>
+                        <button class="close-button" onclick="sfxModule.closeHelpModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="help-tabs">
+                            <button class="help-tab active" onclick="sfxModule.showHelpTab('claude')">Claude LLM</button>
+                            <button class="help-tab" onclick="sfxModule.showHelpTab('suno')">SUNO Music</button>
+                            <button class="help-tab" onclick="sfxModule.showHelpTab('workflow')">Workflow</button>
+                        </div>
+                        
+                        <!-- Claude LLM Tab -->
+                        <div id="help-claude" class="help-content active">
+                            <h4>📝 Claude LLM Prompt Template</h4>
+                            <p>Copy this prompt and use it with Claude Opus or ChatGPT to analyze your script:</p>
+                            <div class="prompt-example">
+                                <pre>Analyze this D&D campaign script for sound effects and background music opportunities.
+
+For each sound effect, provide:
+1. Line number reference
+2. Context (what's happening)  
+3. SFX prompt for ElevenLabs (be specific about the sound)
+4. Duration (short/medium/long)
+5. Category (FOLEY/AMBIENCE/COMBAT/CREATURES/ENVIRONMENTAL/MAGICAL)
+
+For background music sections, provide:
+1. Scene description
+2. Emotional tone
+3. SUNO prompt (musical style, instruments, mood)
+4. Suggested duration
+
+Format your response as JSON:
+{
+  "soundEffects": [
+    {
+      "lineNumber": 23,
+      "context": "The heavy oak door creaks open",
+      "prompt": "Heavy wooden medieval door slowly creaking open with old metal hinges groaning",
+      "duration": "medium",
+      "category": "FOLEY"
+    }
+  ],
+  "musicSuggestions": [
+    {
+      "sceneStart": "The party enters the tavern",
+      "sceneEnd": "They approach the mysterious stranger", 
+      "description": "Bustling tavern atmosphere",
+      "sunoPrompt": "Medieval tavern background music, lute and fiddle, warm and lively, ambient chatter, 120bpm, D major",
+      "duration": "2-3 minutes"
+    }
+  ]
+}
+
+Script to analyze: (Attached)</pre>
+                            </div>
+                            <button onclick="sfxModule.copyClaudePrompt()" class="primary-button">
+                                📋 Copy Claude Prompt Template
+                            </button>
+                        </div>
+                        
+                        <!-- SUNO Tab -->
+                        <div id="help-suno" class="help-content hidden">
+                            <h4>🎼 SUNO Music Generation</h4>
+                            <p>After getting music suggestions from Claude, use these prompts in SUNO AI:</p>
+                            
+                            <div class="suno-examples">
+                                <div class="example-prompt">
+                                    <h5>Tavern Scene Example:</h5>
+                                    <div class="suno-prompt-example">
+                                        "Medieval tavern background music, lute and fiddle, warm and lively, ambient chatter, 120bpm, D major"
+                                    </div>
+                                </div>
+                                
+                                <div class="example-prompt">
+                                    <h5>Combat Scene Example:</h5>
+                                    <div class="suno-prompt-example">
+                                        "Epic battle music, orchestral, intense drums, brass fanfare, 140bpm, C minor, fantasy combat"
+                                    </div>
+                                </div>
+                                
+                                <div class="example-prompt">
+                                    <h5>Mysterious Scene Example:</h5>
+                                    <div class="suno-prompt-example">
+                                        "Dark ambient mystery music, haunting strings, subtle percussion, 80bpm, A minor, dungeon exploration"
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="suno-tips">
+                                <h5>SUNO Tips:</h5>
+                                <ul>
+                                    <li>Include tempo (BPM) for consistency</li>
+                                    <li>Specify key signature for musical coherence</li>
+                                    <li>Mention instruments for desired texture</li>
+                                    <li>Add mood descriptors (warm, dark, epic, mysterious)</li>
+                                    <li>Keep prompts under 200 characters</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Workflow Tab -->
+                        <div id="help-workflow" class="help-content hidden">
+                            <h4>🔄 Complete Workflow</h4>
+                            <div class="workflow-steps">
+                                <div class="workflow-step">
+                                    <span class="step-number">1</span>
+                                    <div class="step-content">
+                                        <h5>Upload & Parse Script</h5>
+                                        <p>Upload your D&D script in the Dialogue tab and complete parsing</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="workflow-step">
+                                    <span class="step-number">2</span>
+                                    <div class="step-content">
+                                        <h5>Load Script to SFX Tab</h5>
+                                        <p>Switch to Sound Effects tab and click "Load from Dialogue Tab"</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="workflow-step">
+                                    <span class="step-number">3</span>
+                                    <div class="step-content">
+                                        <h5>Get LLM Analysis</h5>
+                                        <p>Copy the generated prompt and paste it into Claude Opus or ChatGPT</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="workflow-step">
+                                    <span class="step-number">4</span>
+                                    <div class="step-content">
+                                        <h5>Parse & Review</h5>
+                                        <p>Paste the LLM response back here to extract sound effects and music</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="workflow-step">
+                                    <span class="step-number">5</span>
+                                    <div class="step-content">
+                                        <h5>Generate SFX</h5>
+                                        <p>Generate actual sound effects using ElevenLabs API</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="workflow-step">
+                                    <span class="step-number">6</span>
+                                    <div class="step-content">
+                                        <h5>Create Music in SUNO</h5>
+                                        <p>Use the music prompts in SUNO AI to generate background tracks</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="workflow-step">
+                                    <span class="step-number">7</span>
+                                    <div class="step-content">
+                                        <h5>Download & Mix</h5>
+                                        <p>Download your complete audio package with SFX and music prompts</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
     
     <!-- Audio Preview Player (hidden, for voice previews) -->
     <audio id="preview-player" hidden></audio>
     
-    <script src="js/session-recovery.js"></script>
     <script src="js/episode-library.js"></script>
     <script src="js/speaker-mapper.js"></script>
     <script src="js/file-preview.js"></script>
@@ -246,6 +567,7 @@
     <script src="js/dialogue-editor.js"></script>
     <script src="js/template-manager.js"></script>
     <script src="js/tts-control-panel.js"></script>
+    <script src="js/sfx-module.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html> 

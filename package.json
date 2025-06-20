@@ -2,14 +2,20 @@
   "name": "campaign-tts-processor",
   "version": "0.4.0",
   "description": "Convert D&D campaign scripts to individual character audio files using ElevenLabs TTS. Features intelligent speaker detection, voice mapping with previews, and automated processing pipeline.",
-  "main": "backend/server.js",
+  "main": "main.js",
   "scripts": {
     "start": "node backend/server.js",
     "dev": "nodemon backend/server.js",
     "dev:watch": "nodemon backend/server.js --watch backend --ext js,json",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "echo \"Linting not configured yet\"",
-    "setup": "node backend/utils/setup.js"
+    "setup": "node backend/utils/setup.js",
+    "electron": "electron .",
+    "electron-dev": "set NODE_ENV=development && electron .",
+    "build-win": "electron-builder --win",
+    "build-mac": "electron-builder --mac",
+    "build-linux": "electron-builder --linux",
+    "dist": "electron-builder"
   },
   "keywords": [
     "tts",
@@ -51,11 +57,51 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2"
+    "nodemon": "^3.0.2",
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.4",
+    "electron-reload": "^2.0.0-alpha.1"
   },
   "config": {
     "port": 3000,
     "upload_limit": "10mb"
+  },
+  "build": {
+    "appId": "com.campaigntts.processor",
+    "productName": "Campaign TTS Processor",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "frontend/**/*",
+      "backend/**/*",
+      "node_modules/**/*",
+      "package.json",
+      "!outputs/**/*",
+      "!dist/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Campaign TTS"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.productivity"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icon.png",
+      "category": "Audio"
+    }
   },
   "phase_status": {
     "phase_1": "✅ Complete - File Upload & Basic Processing",
