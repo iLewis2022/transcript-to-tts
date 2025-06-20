@@ -227,7 +227,7 @@ class CostDisplay {
             buttons = buttons.replace('btn-primary', 'btn-warning');
         }
         
-        buttons += '<button class="btn btn-secondary" onclick="backToMapping()">Back to Voice Mapping</button>';
+        // Removed "Back to Voice Mapping" - workflow now flows forward correctly!
         
         return buttons;
     }
@@ -310,14 +310,23 @@ class CostDisplay {
                 })
             });
             
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
             const data = await response.json();
+            console.log('Cost confirmation response:', data);
             
             if (data.success) {
                 // Stop cost updates
                 this.stopCostUpdates();
                 
+                console.log('✅ Cost confirmed, proceeding to processing...');
+                
                 // Proceed to Phase 5 - TTS Processing
                 window.proceedToProcessing();
+            } else {
+                throw new Error(data.error || 'Cost confirmation failed');
             }
         } catch (error) {
             console.error('Cost confirmation error:', error);

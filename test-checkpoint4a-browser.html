@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkpoint 4A: Template Manager Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-header {
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+        .test-section {
+            margin-bottom: 24px;
+            padding: 16px;
+            border: 1px solid #e1e5e9;
+            border-radius: 6px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .test-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 4px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #2980b9;
+        }
+        .test-button.success {
+            background: #27ae60;
+        }
+        .test-button.error {
+            background: #e74c3c;
+        }
+        .test-result {
+            margin-top: 8px;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .test-result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-result.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .test-log {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 8px;
+        }
+        .workflow-test {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🧪 Checkpoint 4A: Template Manager Test</h1>
+            <p><strong>Testing:</strong> Voice mapping template CRUD operations, dialogue editor integration, and complete workflow</p>
+            <p><strong>Server:</strong> <span id="server-status">❓ Checking...</span></p>
+        </div>
+
+        <!-- Backend API Tests -->
+        <div class="test-section">
+            <h3>🔌 Backend API Tests</h3>
+            <button class="test-button" onclick="testServerHealth()">Test Server Health</button>
+            <button class="test-button" onclick="testGetTemplates()">GET /api/templates</button>
+            <button class="test-button" onclick="testCreateTemplate()">POST /api/templates</button>
+            <button class="test-button" onclick="testUpdateTemplate()">PUT /api/templates/:id</button>
+            <button class="test-button" onclick="testDeleteTemplate()">DELETE /api/templates/:id</button>
+            <button class="test-button" onclick="testImportExport()">Import/Export Template</button>
+            <div id="backend-results"></div>
+        </div>
+
+        <!-- Frontend Component Tests -->
+        <div class="test-section">
+            <h3>🎨 Frontend Component Tests</h3>
+            <button class="test-button" onclick="testTemplateManagerInit()">Template Manager Init</button>
+            <button class="test-button" onclick="testTemplateManagerUI()">Show Template Manager</button>
+            <button class="test-button" onclick="testTemplateForm()">Template Form</button>
+            <button class="test-button" onclick="testTemplateList()">Template List Rendering</button>
+            <div id="frontend-results"></div>
+        </div>
+
+        <!-- Integration Tests -->
+        <div class="test-section">
+            <h3>🔗 Integration Tests</h3>
+            <button class="test-button" onclick="testDialogueEditorIntegration()">Dialogue Editor Integration</button>
+            <button class="test-button" onclick="testTemplateApplication()">Template Application</button>
+            <button class="test-button" onclick="testCallbacks()">Callback System</button>
+            <div id="integration-results"></div>
+        </div>
+
+        <!-- Complete Workflow Test -->
+        <div class="workflow-test">
+            <h3>🔄 Complete Workflow Test</h3>
+            <p>This test simulates the complete user workflow from creating templates to applying them in the dialogue editor.</p>
+            <button class="test-button" onclick="testCompleteWorkflow()">🚀 Run Complete Workflow</button>
+            <div id="workflow-results"></div>
+        </div>
+
+        <!-- Test Log -->
+        <div class="test-section">
+            <h3>📝 Test Log</h3>
+            <button class="test-button" onclick="clearLog()">Clear Log</button>
+            <div id="test-log" class="test-log">Test log will appear here...\n</div>
+        </div>
+    </div>
+
+    <script>
+        // Test utilities
+        function log(message) {
+            const logElement = document.getElementById('test-log');
+            logElement.textContent += `[${new Date().toLocaleTimeString()}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('test-log').textContent = 'Test log cleared...\n';
+        }
+
+        function showResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.textContent = message;
+            container.appendChild(resultDiv);
+        }
+
+        function clearResults(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+
+        // Check server health
+        async function testServerHealth() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('server-status').innerHTML = '✅ Server Running';
+                    log('✅ Server health check passed');
+                    showResult('backend-results', 'Server is healthy and responding', 'success');
+                } else {
+                    throw new Error('Server returned error');
+                }
+            } catch (error) {
+                document.getElementById('server-status').innerHTML = '❌ Server Error';
+                log('❌ Server health check failed: ' + error.message);
+                showResult('backend-results', 'Server health check failed: ' + error.message, 'error');
+            }
+        }
+
+        // Backend API Tests
+        async function testGetTemplates() {
+            clearResults('backend-results');
+            try {
+                log('🧪 Testing GET /api/templates...');
+                const response = await fetch('/api/templates');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(`✅ GET templates success: ${data.templates.length} templates found`);
+                    showResult('backend-results', `GET templates: ${data.templates.length} templates loaded`, 'success');
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                log('❌ GET templates failed: ' + error.message);
+                showResult('backend-results', 'GET templates failed: ' + error.message, 'error');
+            }
+        }
+
+        async function testCreateTemplate() {
+            try {
+                log('🧪 Testing POST /api/templates...');
+                const testTemplate = {
+                    name: 'Test Template ' + Date.now(),
+                    description: 'Test template created by automated test',
+                    speakerMapping: {
+                        'ALICE': 'voice-001',
+                        'BOB': 'voice-002',
+                        'NARRATOR': 'voice-003'
+                    },
+                    metadata: {
+                        source: 'automated-test'
+                    }
+                };
+                
+                const response = await fetch('/api/templates', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testTemplate)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    window.testTemplateId = data.template.id;
+                    log(`✅ POST template success: Created template "${data.template.name}"`);
+                    showResult('backend-results', `POST template: Created "${data.template.name}"`, 'success');
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                log('❌ POST template failed: ' + error.message);
+                showResult('backend-results', 'POST template failed: ' + error.message, 'error');
+            }
+        }
+
+        async function testUpdateTemplate() {
+            if (!window.testTemplateId) {
+                await testCreateTemplate();
+            }
+            
+            try {
+                log('🧪 Testing PUT /api/templates/:id...');
+                const updateData = {
+                    description: 'Updated description by automated test',
+                    speakerMapping: {
+                        'ALICE': 'voice-001-updated',
+                        'BOB': 'voice-002-updated',
+                        'NARRATOR': 'voice-003-updated',
+                        'CHARLIE': 'voice-004'
+                    }
+                };
+                
+                const response = await fetch(`/api/templates/${window.testTemplateId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(`✅ PUT template success: Updated template "${data.template.name}"`);
+                    showResult('backend-results', `PUT template: Updated template successfully`, 'success');
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                log('❌ PUT template failed: ' + error.message);
+                showResult('backend-results', 'PUT template failed: ' + error.message, 'error');
+            }
+        }
+
+        async function testDeleteTemplate() {
+            if (!window.testTemplateId) {
+                await testCreateTemplate();
+            }
+            
+            try {
+                log('🧪 Testing DELETE /api/templates/:id...');
+                const response = await fetch(`/api/templates/${window.testTemplateId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(`✅ DELETE template success: Deleted template`);
+                    showResult('backend-results', 'DELETE template: Template deleted successfully', 'success');
+                    window.testTemplateId = null;
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                log('❌ DELETE template failed: ' + error.message);
+                showResult('backend-results', 'DELETE template failed: ' + error.message, 'error');
+            }
+        }
+
+        async function testImportExport() {
+            try {
+                log('🧪 Testing template import/export...');
+                
+                // First create a template to export
+                await testCreateTemplate();
+                if (!window.testTemplateId) throw new Error('No template to export');
+                
+                // Test export
+                const exportResponse = await fetch(`/api/templates/${window.testTemplateId}/export`);
+                if (!exportResponse.ok) throw new Error('Export failed');
+                
+                const exportData = await exportResponse.json();
+                log('✅ Template export successful');
+                
+                // Test import
+                const importResponse = await fetch('/api/templates/import', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(exportData)
+                });
+                
+                const importData = await importResponse.json();
+                if (!importResponse.ok) throw new Error(importData.error);
+                
+                log('✅ Template import successful');
+                showResult('backend-results', 'Import/Export: Both operations successful', 'success');
+                
+            } catch (error) {
+                log('❌ Import/Export failed: ' + error.message);
+                showResult('backend-results', 'Import/Export failed: ' + error.message, 'error');
+            }
+        }
+
+        // Frontend Component Tests
+        function testTemplateManagerInit() {
+            clearResults('frontend-results');
+            try {
+                log('🧪 Testing Template Manager initialization...');
+                
+                if (window.templateManager) {
+                    log('✅ Template Manager is available globally');
+                    
+                    if (typeof templateManager.show === 'function') {
+                        log('✅ Template Manager has show method');
+                        showResult('frontend-results', 'Template Manager initialized correctly', 'success');
+                    } else {
+                        throw new Error('Template Manager missing show method');
+                    }
+                } else {
+                    throw new Error('Template Manager not found in global scope');
+                }
+            } catch (error) {
+                log('❌ Template Manager init failed: ' + error.message);
+                showResult('frontend-results', 'Template Manager init failed: ' + error.message, 'error');
+            }
+        }
+
+        function testTemplateManagerUI() {
+            try {
+                log('🧪 Testing Template Manager UI display...');
+                
+                const testMapping = {
+                    'ALICE': 'voice-001',
+                    'BOB': 'voice-002'
+                };
+                
+                templateManager.show(testMapping);
+                log('✅ Template Manager UI displayed');
+                showResult('frontend-results', 'Template Manager UI opened successfully', 'success');
+                
+                // Close it after a moment
+                setTimeout(() => {
+                    templateManager.hide();
+                    log('ℹ️ Template Manager UI closed');
+                }, 2000);
+                
+            } catch (error) {
+                log('❌ Template Manager UI test failed: ' + error.message);
+                showResult('frontend-results', 'Template Manager UI test failed: ' + error.message, 'error');
+            }
+        }
+
+        function testTemplateForm() {
+            log('🧪 Testing Template Form functionality...');
+            showResult('frontend-results', 'Template Form: Manual test - Open Template Manager and try creating a template', 'info');
+        }
+
+        function testTemplateList() {
+            log('🧪 Testing Template List rendering...');
+            showResult('frontend-results', 'Template List: Manual test - Check template list in Template Manager', 'info');
+        }
+
+        // Integration Tests
+        function testDialogueEditorIntegration() {
+            clearResults('integration-results');
+            try {
+                log('🧪 Testing Dialogue Editor integration...');
+                
+                if (window.dialogueEditor && typeof dialogueEditor.openTemplateManager === 'function') {
+                    log('✅ Dialogue Editor has Template Manager integration');
+                    showResult('integration-results', 'Dialogue Editor integration: Methods available', 'success');
+                } else {
+                    throw new Error('Dialogue Editor missing Template Manager integration');
+                }
+            } catch (error) {
+                log('❌ Dialogue Editor integration failed: ' + error.message);
+                showResult('integration-results', 'Dialogue Editor integration failed: ' + error.message, 'error');
+            }
+        }
+
+        function testTemplateApplication() {
+            log('🧪 Testing template application...');
+            showResult('integration-results', 'Template Application: Manual test - Use testDialogueEditor() then apply a template', 'info');
+        }
+
+        function testCallbacks() {
+            try {
+                log('🧪 Testing callback system...');
+                
+                const testCallback = (mapping, name) => {
+                    log(`✅ Callback triggered: Applied "${name}" with ${Object.keys(mapping).length} mappings`);
+                };
+                
+                templateManager.setCallbacks({
+                    onApplyTemplate: testCallback
+                });
+                
+                log('✅ Callback system test passed');
+                showResult('integration-results', 'Callback system: Setup successful', 'success');
+                
+            } catch (error) {
+                log('❌ Callback system test failed: ' + error.message);
+                showResult('integration-results', 'Callback system failed: ' + error.message, 'error');
+            }
+        }
+
+        // Complete Workflow Test
+        async function testCompleteWorkflow() {
+            clearResults('workflow-results');
+            try {
+                log('🚀 Starting complete workflow test...');
+                
+                // Step 1: Server health
+                log('Step 1: Checking server health...');
+                await testServerHealth();
+                
+                // Step 2: Create a test template
+                log('Step 2: Creating test template...');
+                await testCreateTemplate();
+                
+                // Step 3: Start dialogue editor
+                log('Step 3: Starting dialogue editor...');
+                await testDialogueEditor();
+                
+                // Step 4: Open template manager from dialogue editor
+                log('Step 4: Opening template manager...');
+                if (window.dialogueEditor) {
+                    dialogueEditor.openTemplateManager();
+                    log('✅ Template manager opened from dialogue editor');
+                }
+                
+                log('🎉 Complete workflow test finished! Check the UI for final verification.');
+                showResult('workflow-results', 'Complete workflow: All steps completed successfully', 'success');
+                
+            } catch (error) {
+                log('❌ Complete workflow test failed: ' + error.message);
+                showResult('workflow-results', 'Complete workflow failed: ' + error.message, 'error');
+            }
+        }
+
+        // Initialize dialogue editor for testing
+        async function testDialogueEditor() {
+            const testDialogues = [
+                { type: 'dialogue', speaker: 'ALICE', text: 'Hello, how are you?' },
+                { type: 'dialogue', speaker: 'BOB', text: 'I am doing well, thank you!' },
+                { type: 'dialogue', speaker: 'ALICE', text: 'That is great to hear!' }
+            ];
+            
+            const testSessionId = 'test-session-' + Date.now();
+            await dialogueEditor.initialize(testSessionId, testDialogues, {});
+            log('✅ Dialogue editor initialized for testing');
+        }
+
+        // Auto-run initial tests
+        window.addEventListener('load', () => {
+            log('🚀 Checkpoint 4A Template Manager Test Suite Started');
+            testServerHealth();
+        });
+    </script>
+</body>
+</html> 

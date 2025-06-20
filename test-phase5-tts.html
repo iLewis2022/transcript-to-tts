@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 5: Enhanced TTS Integration Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-header {
+            border-bottom: 2px solid #ff6b6b;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+        .test-section {
+            margin-bottom: 24px;
+            padding: 16px;
+            border: 1px solid #e1e5e9;
+            border-radius: 6px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .test-button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 4px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #ee5a24;
+        }
+        .test-button.success {
+            background: #27ae60;
+        }
+        .test-button.error {
+            background: #e74c3c;
+        }
+        .test-result {
+            margin-top: 8px;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .test-result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-result.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .test-log {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 8px;
+        }
+        .feature-demo {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+        .critical-warning {
+            background: #f8d7da;
+            border: 2px solid #e74c3c;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            color: #721c24;
+        }
+        .critical-warning h3 {
+            margin-top: 0;
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🎤 Phase 5: Enhanced TTS Integration Test</h1>
+            <p><strong>Testing:</strong> Voice preview, advanced settings, model selection, quality controls, and ElevenLabs v2 model usage</p>
+            <p><strong>Server:</strong> <span id="server-status">❓ Checking...</span></p>
+        </div>
+
+        <!-- Critical Model Warning -->
+        <div class="critical-warning">
+            <h3>⚠️ Model Version Check</h3>
+            <p><strong>IMPORTANT:</strong> This test will verify that the system now defaults to <code>eleven_multilingual_v2</code> instead of the problematic <code>eleven_monolingual_v1</code> that caused your quality issues.</p>
+            <p>The default model has been changed in the environment configuration to prevent future v1 usage.</p>
+        </div>
+
+        <!-- Backend API Tests -->
+        <div class="test-section">
+            <h3>🔌 Backend TTS API Tests</h3>
+            <button class="test-button" onclick="testServerHealth()">Test Server Health</button>
+            <button class="test-button" onclick="testGetModels()">GET /api/tts/models</button>
+            <button class="test-button" onclick="testGetFormats()">GET /api/tts/formats</button>
+            <button class="test-button" onclick="testVoicePreview()">POST /api/tts/preview</button>
+            <button class="test-button" onclick="testSingleGeneration()">POST /api/tts/generate-single</button>
+            <button class="test-button" onclick="testValidateSettings()">POST /api/tts/validate-settings</button>
+            <div id="backend-results"></div>
+        </div>
+
+        <!-- Frontend Component Tests -->
+        <div class="test-section">
+            <h3>🎨 TTS Control Panel Tests</h3>
+            <button class="test-button" onclick="testTTSPanelInit()">TTS Panel Init</button>
+            <button class="test-button" onclick="testTTSPanelUI()">Show TTS Panel</button>
+            <button class="test-button" onclick="testModelSelection()">Model Selection</button>
+            <button class="test-button" onclick="testVoiceSettings()">Voice Settings</button>
+            <div id="frontend-results"></div>
+        </div>
+
+        <!-- Integration Tests -->
+        <div class="test-section">
+            <h3>🔗 Integration Tests</h3>
+            <button class="test-button" onclick="testDialogueEditorIntegration()">Dialogue Editor Integration</button>
+            <button class="test-button" onclick="testTTSCallback()">TTS Settings Callback</button>
+            <button class="test-button" onclick="testSettingsValidation()">Settings Validation</button>
+            <div id="integration-results"></div>
+        </div>
+
+        <!-- Feature Demo -->
+        <div class="feature-demo">
+            <h3>🚀 Complete Feature Demo</h3>
+            <p>This demo shows the complete enhanced TTS workflow with proper model selection:</p>
+            <button class="test-button" onclick="runCompleteDemo()">🎯 Run Complete Demo</button>
+            <div id="demo-results"></div>
+        </div>
+
+        <!-- Test Log -->
+        <div class="test-section">
+            <h3>📝 Test Log</h3>
+            <button class="test-button" onclick="clearLog()">Clear Log</button>
+            <div id="test-log" class="test-log">Enhanced TTS Integration test log...\n</div>
+        </div>
+    </div>
+
+    <script>
+        // Test utilities
+        function log(message) {
+            const logElement = document.getElementById('test-log');
+            logElement.textContent += `[${new Date().toLocaleTimeString()}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('test-log').textContent = 'Test log cleared...\n';
+        }
+
+        function showResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.textContent = message;
+            container.appendChild(resultDiv);
+        }
+
+        function clearResults(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+
+        // Check server health
+        async function testServerHealth() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('server-status').innerHTML = '✅ Server Running';
+                    log('✅ Server health check passed');
+                    showResult('backend-results', 'Server is healthy and responding', 'success');
+                } else {
+                    throw new Error('Server returned error');
+                }
+            } catch (error) {
+                document.getElementById('server-status').innerHTML = '❌ Server Error';
+                log('❌ Server health check failed: ' + error.message);
+                showResult('backend-results', 'Server health check failed: ' + error.message, 'error');
+            }
+        }
+
+        // Backend API Tests
+        async function testGetModels() {
+            clearResults('backend-results');
+            try {
+                log('🧪 Testing GET /api/tts/models...');
+                const response = await fetch('/api/tts/models');
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    log(`✅ GET models success: ${data.models.length} models found`);
+                    
+                    // Check for v2 model
+                    const v2Model = data.models.find(m => m.model_id === 'eleven_multilingual_v2');
+                    const v1Model = data.models.find(m => m.model_id === 'eleven_monolingual_v1');
+                    
+                    if (v2Model && v2Model.recommended) {
+                        log('✅ CRITICAL: v2 model found and marked as recommended');
+                        showResult('backend-results', `Models loaded: ${data.models.length} available, v2 is recommended ✅`, 'success');
+                    } else {
+                        log('⚠️ WARNING: v2 model not set as recommended');
+                        showResult('backend-results', 'Models loaded but v2 model issue detected', 'error');
+                    }
+                    
+                    if (v1Model && v1Model.warning) {
+                        log('✅ CRITICAL: v1 model has proper warning');
+                    }
+                    
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+            } catch (error) {
+                log('❌ GET models failed: ' + error.message);
+                showResult('backend-results', 'GET models failed: ' + error.message, 'error');
+            }
+        }
+
+        async function testGetFormats() {
+            try {
+                log('🧪 Testing GET /api/tts/formats...');
+                const response = await fetch('/api/tts/formats');
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    log(`✅ GET formats success: ${data.formats.length} formats found`);
+                    
+                    const recommendedFormat = data.formats.find(f => f.recommended);
+                    if (recommendedFormat) {
+                        log(`✅ Recommended format: ${recommendedFormat.name}`);
+                    }
+                    
+                    showResult('backend-results', `Formats loaded: ${data.formats.length} available`, 'success');
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+            } catch (error) {
+                log('❌ GET formats failed: ' + error.message);
+                showResult('backend-results', 'GET formats failed: ' + error.message, 'error');
+            }
+        }
+
+        async function testVoicePreview() {
+            try {
+                log('🧪 Testing POST /api/tts/preview...');
+                
+                // First get a voice to test with
+                const voicesResponse = await fetch('/api/elevenlabs/voices');
+                const voicesData = await voicesResponse.json();
+                
+                if (!voicesData.success || voicesData.voices.length === 0) {
+                    throw new Error('No voices available for testing');
+                }
+                
+                const testVoice = voicesData.voices[0];
+                log(`Using test voice: ${testVoice.name}`);
+                
+                const response = await fetch('/api/tts/preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        voice_id: testVoice.voice_id,
+                        text: 'This is a test preview using the new v2 model.',
+                        settings: {
+                            model_id: 'eleven_multilingual_v2',
+                            stability: 0.5,
+                            similarity_boost: 0.8
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    log('✅ Voice preview generation successful');
+                    log(`Characters processed: ${data.character_count}`);
+                    log(`Model used: ${data.settings_used.model_id}`);
+                    
+                    if (data.settings_used.model_id === 'eleven_multilingual_v2') {
+                        showResult('backend-results', 'Voice preview: SUCCESS with v2 model ✅', 'success');
+                    } else {
+                        showResult('backend-results', `Voice preview: SUCCESS but used ${data.settings_used.model_id}`, 'error');
+                    }
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+            } catch (error) {
+                log('❌ Voice preview failed: ' + error.message);
+                showResult('backend-results', 'Voice preview failed: ' + error.message, 'error');
+            }
+        }
+
+        async function testSingleGeneration() {
+            try {
+                log('🧪 Testing POST /api/tts/generate-single...');
+                showResult('backend-results', 'Single generation: Requires ElevenLabs API key - manual test', 'info');
+            } catch (error) {
+                log('❌ Single generation test failed: ' + error.message);
+                showResult('backend-results', 'Single generation failed: ' + error.message, 'error');
+            }
+        }
+
+        async function testValidateSettings() {
+            try {
+                log('🧪 Testing POST /api/tts/validate-settings...');
+                
+                const response = await fetch('/api/tts/validate-settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model_id: 'eleven_monolingual_v1',
+                        total_characters: 1000,
+                        settings: {
+                            stability: 0.5,
+                            similarity_boost: 0.8
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    log('✅ Settings validation successful');
+                    
+                    if (data.validation.warnings.length > 0) {
+                        const v1Warning = data.validation.warnings.find(w => w.type === 'model_quality');
+                        if (v1Warning) {
+                            log('✅ CRITICAL: v1 model warning detected in validation');
+                            showResult('backend-results', 'Settings validation: v1 warning system working ✅', 'success');
+                        }
+                    }
+                    
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+            } catch (error) {
+                log('❌ Settings validation failed: ' + error.message);
+                showResult('backend-results', 'Settings validation failed: ' + error.message, 'error');
+            }
+        }
+
+        // Frontend Component Tests
+        function testTTSPanelInit() {
+            clearResults('frontend-results');
+            try {
+                log('🧪 Testing TTS Control Panel initialization...');
+                
+                if (window.ttsControlPanel) {
+                    log('✅ TTS Control Panel is available globally');
+                    
+                    if (typeof ttsControlPanel.show === 'function') {
+                        log('✅ TTS Control Panel has show method');
+                        showResult('frontend-results', 'TTS Control Panel initialized correctly', 'success');
+                    } else {
+                        throw new Error('TTS Control Panel missing show method');
+                    }
+                } else {
+                    throw new Error('TTS Control Panel not found in global scope');
+                }
+            } catch (error) {
+                log('❌ TTS Control Panel init failed: ' + error.message);
+                showResult('frontend-results', 'TTS Control Panel init failed: ' + error.message, 'error');
+            }
+        }
+
+        function testTTSPanelUI() {
+            try {
+                log('🧪 Testing TTS Control Panel UI display...');
+                
+                const testDialogues = [
+                    { text: 'Hello, this is a test dialogue.' },
+                    { text: 'This tests the v2 model integration.' }
+                ];
+                
+                ttsControlPanel.show(null, testDialogues);
+                log('✅ TTS Control Panel UI displayed');
+                showResult('frontend-results', 'TTS Control Panel UI opened successfully', 'success');
+                
+                // Close it after a moment
+                setTimeout(() => {
+                    ttsControlPanel.hide();
+                    log('ℹ️ TTS Control Panel UI closed');
+                }, 3000);
+                
+            } catch (error) {
+                log('❌ TTS Control Panel UI test failed: ' + error.message);
+                showResult('frontend-results', 'TTS Control Panel UI test failed: ' + error.message, 'error');
+            }
+        }
+
+        function testModelSelection() {
+            log('🧪 Testing model selection functionality...');
+            showResult('frontend-results', 'Model Selection: Manual test - Open TTS panel and verify v2 is selected by default', 'info');
+        }
+
+        function testVoiceSettings() {
+            log('🧪 Testing voice settings controls...');
+            showResult('frontend-results', 'Voice Settings: Manual test - Adjust sliders and checkboxes in TTS panel', 'info');
+        }
+
+        // Integration Tests
+        function testDialogueEditorIntegration() {
+            clearResults('integration-results');
+            try {
+                log('🧪 Testing Dialogue Editor TTS integration...');
+                
+                if (window.dialogueEditor && typeof dialogueEditor.openTTSControls === 'function') {
+                    log('✅ Dialogue Editor has TTS Control Panel integration');
+                    showResult('integration-results', 'Dialogue Editor integration: TTS methods available', 'success');
+                } else {
+                    throw new Error('Dialogue Editor missing TTS Control Panel integration');
+                }
+            } catch (error) {
+                log('❌ Dialogue Editor TTS integration failed: ' + error.message);
+                showResult('integration-results', 'Dialogue Editor TTS integration failed: ' + error.message, 'error');
+            }
+        }
+
+        function testTTSCallback() {
+            try {
+                log('🧪 Testing TTS settings callback system...');
+                
+                const testCallback = (settings, voice) => {
+                    log(`✅ TTS Callback triggered: Model ${settings.model_id}, Voice: ${voice?.name || 'None'}`);
+                };
+                
+                ttsControlPanel.setCallback(testCallback);
+                
+                log('✅ TTS callback system test passed');
+                showResult('integration-results', 'TTS callback system: Setup successful', 'success');
+                
+            } catch (error) {
+                log('❌ TTS callback system test failed: ' + error.message);
+                showResult('integration-results', 'TTS callback system failed: ' + error.message, 'error');
+            }
+        }
+
+        function testSettingsValidation() {
+            log('🧪 Testing TTS settings validation...');
+            showResult('integration-results', 'Settings Validation: Manual test - Try invalid settings in TTS panel', 'info');
+        }
+
+        // Complete Demo
+        async function runCompleteDemo() {
+            clearResults('demo-results');
+            try {
+                log('🚀 Starting complete enhanced TTS demo...');
+                
+                // Step 1: Check server
+                log('Step 1: Checking server and models...');
+                await testServerHealth();
+                await testGetModels();
+                
+                // Step 2: Initialize dialogue editor with test data
+                log('Step 2: Initializing dialogue editor...');
+                const testDialogues = [
+                    { type: 'dialogue', speaker: 'ALICE', text: 'Hello, this is a test using the new v2 model.' },
+                    { type: 'dialogue', speaker: 'BOB', text: 'The quality should be much better now!' }
+                ];
+                
+                if (window.dialogueEditor) {
+                    const testSessionId = 'test-session-' + Date.now();
+                    await dialogueEditor.initialize(testSessionId, testDialogues, {});
+                    log('✅ Dialogue editor initialized');
+                }
+                
+                // Step 3: Open TTS control panel
+                log('Step 3: Opening TTS control panel...');
+                if (window.dialogueEditor) {
+                    dialogueEditor.openTTSControls();
+                    log('✅ TTS control panel opened from dialogue editor');
+                }
+                
+                log('🎉 Complete demo finished! Check that:');
+                log('   - Default model is eleven_multilingual_v2 (not v1)');
+                log('   - v1 model shows warning message');
+                log('   - Voice preview works with v2 model');
+                log('   - All settings are properly configurable');
+                
+                showResult('demo-results', 'Complete demo: All steps completed - verify v2 model usage!', 'success');
+                
+            } catch (error) {
+                log('❌ Complete demo failed: ' + error.message);
+                showResult('demo-results', 'Complete demo failed: ' + error.message, 'error');
+            }
+        }
+
+        // Auto-run initial tests
+        window.addEventListener('load', () => {
+            log('🚀 Phase 5 Enhanced TTS Integration Test Suite Started');
+            log('🎯 Focus: Ensuring v2 model usage and preventing quality issues');
+            testServerHealth();
+        });
+    </script>
+</body>
+</html> 

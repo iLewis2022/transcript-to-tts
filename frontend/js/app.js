@@ -423,17 +423,26 @@ async function confirmParse() {
             method: 'POST'
         });
         
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
         const validation = await response.json();
+        console.log('Validation response:', validation);
+        
+        if (!validation.success) {
+            throw new Error(validation.error || 'Validation failed');
+        }
         
         if (!validation.ready) {
-            const issues = validation.validation.issues.map(i => i.message).join('\n');
+            const issues = validation.validation?.issues?.map(i => i.message).join('\n') || 'Unknown validation issues';
             if (!confirm(`Parse validation found issues:\n${issues}\n\nContinue anyway?`)) {
                 return;
             }
         }
         
-        // Proceed to Phase 4 - Cost Analysis
-        proceedToCostAnalysis();
+        // Proceed to Phase 3 - Voice Mapping (FIXED!)
+        proceedToMapping();
         
     } catch (error) {
         console.error('Validation error:', error);

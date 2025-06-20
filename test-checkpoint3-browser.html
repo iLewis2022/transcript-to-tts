@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkpoint 3 Test - Dialogue Editor API</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #0a0a0a;
+            color: #e0e0e0;
+        }
+        .test-section {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #333;
+        }
+        .test-result {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            background: rgba(74, 222, 128, 0.2);
+            border: 1px solid #4ade80;
+        }
+        .error {
+            background: rgba(248, 113, 113, 0.2);
+            border: 1px solid #f87171;
+        }
+        .info {
+            background: rgba(96, 165, 250, 0.2);
+            border: 1px solid #60a5fa;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #764ba2;
+        }
+        pre {
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Checkpoint 3 Test: Dialogue Editor API</h1>
+    <p>This page tests the dialogue editor functionality with real API endpoints.</p>
+    
+    <div class="test-section">
+        <h2>1️⃣ Test Dialogue Editor Initialization</h2>
+        <button onclick="testInitialization()">Test Initialization</button>
+        <div id="init-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2️⃣ Test Auto-Save Functionality</h2>
+        <button onclick="testAutoSave()">Test Auto-Save</button>
+        <div id="autosave-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3️⃣ Test Save Functionality</h2>
+        <button onclick="testSave()">Test Save</button>
+        <div id="save-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4️⃣ Test Load Functionality</h2>
+        <button onclick="testLoad()">Test Load</button>
+        <div id="load-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>5️⃣ Open Full Dialogue Editor</h2>
+        <button onclick="openDialogueEditor()">Open Editor</button>
+        <div id="editor-result"></div>
+    </div>
+
+    <!-- Include the dialogue editor -->
+    <script>
+        // Simple DialogueEditor class for testing
+        class TestDialogueEditor {
+            constructor() {
+                this.dialogues = [];
+                this.currentSessionId = null;
+                this.hasChanges = false;
+                this.autoSaveInterval = null;
+            }
+
+            async initialize(sessionId, dialogues) {
+                this.currentSessionId = sessionId;
+                this.dialogues = JSON.parse(JSON.stringify(dialogues || []));
+                return true;
+            }
+
+            async loadExistingEdits(sessionId) {
+                try {
+                    const response = await fetch(`/api/edit/dialogues/${sessionId}`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.hasEdits) {
+                        return {
+                            dialogues: data.data.dialogues,
+                            source: data.source,
+                            metadata: data.data.metadata
+                        };
+                    }
+                    return null;
+                } catch (error) {
+                    console.error('Failed to load existing edits:', error);
+                    return null;
+                }
+            }
+
+            async autoSave() {
+                if (!this.currentSessionId || !this.hasChanges) return false;
+                
+                try {
+                    const response = await fetch(`/api/edit/autosave/${this.currentSessionId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ dialogues: this.dialogues })
+                    });
+                    
+                    const data = await response.json();
+                    return data.success;
+                } catch (error) {
+                    console.error('Auto-save failed:', error);
+                    return false;
+                }
+            }
+
+            async save() {
+                try {
+                    const response = await fetch(`/api/edit/save/${this.currentSessionId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            dialogues: this.dialogues,
+                            metadata: {
+                                editedAt: new Date().toISOString(),
+                                totalChanges: this.dialogues.filter(d => d.modified).length,
+                                editor: 'test-script'
+                            }
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    return data;
+                } catch (error) {
+                    console.error('Save failed:', error);
+                    return { success: false, error: error.message };
+                }
+            }
+        }
+
+        const testEditor = new TestDialogueEditor();
+        
+        const testDialogues = [
+            { type: 'dialogue', speaker: 'ALICE', text: 'Hello there!', modified: false },
+            { type: 'dialogue', speaker: 'BOB', text: 'Hi Alice, how are you?', modified: false },
+            { type: 'stage', speaker: 'NARRATOR', text: 'They shake hands warmly.', modified: false },
+            { type: 'dialogue', speaker: 'ALICE', text: 'I am doing great, thanks for asking!', modified: true }
+        ];
+
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="test-result ${type}">${message}</div>`;
+        }
+
+        async function testInitialization() {
+            showResult('init-result', '🔄 Testing initialization...', 'info');
+            
+            try {
+                const sessionId = 'test-session-' + Date.now();
+                const success = await testEditor.initialize(sessionId, testDialogues);
+                
+                if (success) {
+                    showResult('init-result', `
+                        ✅ <strong>Initialization Success!</strong><br>
+                        Session ID: ${sessionId}<br>
+                        Dialogues: ${testEditor.dialogues.length}<br>
+                        <pre>${JSON.stringify(testEditor.dialogues[0], null, 2)}</pre>
+                    `, 'success');
+                } else {
+                    showResult('init-result', '❌ Initialization failed', 'error');
+                }
+            } catch (error) {
+                showResult('init-result', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAutoSave() {
+            if (!testEditor.currentSessionId) {
+                showResult('autosave-result', '⚠️ Please run initialization test first', 'error');
+                return;
+            }
+            
+            showResult('autosave-result', '🔄 Testing auto-save...', 'info');
+            
+            try {
+                // Mark as changed and try auto-save
+                testEditor.hasChanges = true;
+                const success = await testEditor.autoSave();
+                
+                if (success) {
+                    showResult('autosave-result', '✅ Auto-save successful!', 'success');
+                } else {
+                    showResult('autosave-result', '❌ Auto-save failed (expected for test session)', 'error');
+                }
+            } catch (error) {
+                showResult('autosave-result', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSave() {
+            if (!testEditor.currentSessionId) {
+                showResult('save-result', '⚠️ Please run initialization test first', 'error');
+                return;
+            }
+            
+            showResult('save-result', '🔄 Testing save...', 'info');
+            
+            try {
+                const result = await testEditor.save();
+                
+                if (result.success) {
+                    showResult('save-result', `
+                        ✅ <strong>Save Success!</strong><br>
+                        Message: ${result.message}<br>
+                        <pre>${JSON.stringify(result.metadata, null, 2)}</pre>
+                    `, 'success');
+                } else {
+                    showResult('save-result', `❌ Save failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showResult('save-result', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testLoad() {
+            if (!testEditor.currentSessionId) {
+                showResult('load-result', '⚠️ Please run initialization test first', 'error');
+                return;
+            }
+            
+            showResult('load-result', '🔄 Testing load...', 'info');
+            
+            try {
+                const edits = await testEditor.loadExistingEdits(testEditor.currentSessionId);
+                
+                if (edits) {
+                    showResult('load-result', `
+                        ✅ <strong>Load Success!</strong><br>
+                        Source: ${edits.source}<br>
+                        Dialogues: ${edits.dialogues.length}<br>
+                        <pre>${JSON.stringify(edits.metadata, null, 2)}</pre>
+                    `, 'success');
+                } else {
+                    showResult('load-result', '💭 No existing edits found (expected for new session)', 'info');
+                }
+            } catch (error) {
+                showResult('load-result', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function openDialogueEditor() {
+            showResult('editor-result', '🔄 Opening dialogue editor...', 'info');
+            
+            // Open the main app and run the test
+            const newWindow = window.open('/', '_blank');
+            
+            setTimeout(() => {
+                showResult('editor-result', `
+                    ✅ <strong>Editor opened in new tab!</strong><br>
+                    To test:<br>
+                    1. Open browser console in the new tab<br>
+                    2. Run: <code>testDialogueEditor()</code><br>
+                    3. Test all editing functions<br>
+                    4. Try saving changes
+                `, 'success');
+            }, 1000);
+        }
+
+        // Run initialization test automatically
+        setTimeout(testInitialization, 1000);
+    </script>
+</body>
+</html> 

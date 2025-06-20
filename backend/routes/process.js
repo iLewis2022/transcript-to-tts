@@ -62,6 +62,8 @@ router.post('/parse', async (req, res) => {
         session.speakerBreakdown = speakerBreakdown;
         session.status = 'parsed';
         
+        logger.info(`Parse complete for session: ${sessionId}, cost estimate saved`);
+        
         // Generate preview
         const preview = parser.generateParsePreview(parseResults);
         
@@ -120,10 +122,18 @@ router.get('/cost/:sessionId', async (req, res) => {
  */
 router.post('/cost/:sessionId/confirm', async (req, res) => {
     try {
+        logger.info(`Confirming cost for session: ${req.params.sessionId}`);
+        
         const { acknowledged, splitEpisode } = req.body;
         const session = await fileManager.getSession(req.params.sessionId);
         
+        if (!session) {
+            logger.error(`Session not found for cost confirmation: ${req.params.sessionId}`);
+            return res.status(404).json({ error: 'Session not found' });
+        }
+        
         if (!session.costEstimate) {
+            logger.error(`No cost estimate found for session: ${req.params.sessionId}`);
             return res.status(400).json({ error: 'No cost estimate found' });
         }
         
@@ -143,6 +153,10 @@ router.post('/cost/:sessionId/confirm', async (req, res) => {
         session.costApprovedAt = new Date().toISOString();
         session.splitRequested = splitEpisode || false;
         
+        // Session is automatically updated since it's a reference to the in-memory object
+        
+        logger.info(`Cost approved for session: ${req.params.sessionId}`);
+        
         res.json({
             success: true,
             message: 'Cost approved, ready to proceed with processing',
@@ -151,7 +165,11 @@ router.post('/cost/:sessionId/confirm', async (req, res) => {
         
     } catch (error) {
         logger.error('Cost confirmation error:', error);
-        res.status(500).json({ error: error.message });
+        logger.error('Cost confirmation error stack:', error.stack);
+        res.status(500).json({ 
+            error: error.message,
+            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 });
 
@@ -244,9 +262,17 @@ router.get('/parse/:sessionId/removed', async (req, res) => {
  */
 router.post('/parse/:sessionId/validate', async (req, res) => {
     try {
+        logger.info(`Validating parse results for session: ${req.params.sessionId}`);
+        
         const session = await fileManager.getSession(req.params.sessionId);
         
+        if (!session) {
+            logger.error(`Session not found: ${req.params.sessionId}`);
+            return res.status(404).json({ error: 'Session not found' });
+        }
+        
         if (!session.parseResults) {
+            logger.error(`No parse results found for session: ${req.params.sessionId}`);
             return res.status(404).json({ error: 'No parse results found' });
         }
         
@@ -318,7 +344,11 @@ router.post('/parse/:sessionId/validate', async (req, res) => {
         
     } catch (error) {
         logger.error('Validation error:', error);
-        res.status(500).json({ error: error.message });
+        logger.error('Validation error stack:', error.stack);
+        res.status(500).json({ 
+            error: error.message,
+            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 });
 

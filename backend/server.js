@@ -11,6 +11,10 @@ const processRoutes = require('./routes/process');
 const elevenLabsRoutes = require('./routes/elevenlabs');
 const processingRoutes = require('./routes/processing');
 const downloadRoutes = require('./routes/download');
+// Phase 7 routes
+const editRoutes = require('./routes/edit');
+const templatesRoutes = require('./routes/templates');
+const ttsEnhancedRoutes = require('./routes/tts-enhanced');
 
 // Create Express app
 const app = express();
@@ -35,6 +39,10 @@ app.use('/api/process', processRoutes);
 app.use('/api/elevenlabs', elevenLabsRoutes);
 app.use('/api/processing', processingRoutes);
 app.use('/api/download', downloadRoutes);
+// Phase 7 routes
+app.use('/api/edit', editRoutes);
+app.use('/api/templates', templatesRoutes);
+app.use('/api/tts', ttsEnhancedRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

@@ -27,7 +27,7 @@ module.exports = {
   elevenLabs: {
     apiKey: process.env.ELEVENLABS_API_KEY,
     subscriptionQuota: parseInt(process.env.ELEVENLABS_SUBSCRIPTION_QUOTA) || 1000000,
-    model: process.env.ELEVENLABS_MODEL || 'eleven_monolingual_v1',
+    model: process.env.ELEVENLABS_MODEL || 'eleven_multilingual_v2',
     voiceSettings: {
       stability: parseFloat(process.env.VOICE_STABILITY) || 0.75,
       similarity_boost: parseFloat(process.env.VOICE_SIMILARITY) || 0.75,
