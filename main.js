@@ -112,9 +112,12 @@ function startServer() {
     // Start the backend server
     console.log('Starting backend server...');
     
-    serverProcess = spawn('node', ['backend/server.js'], {
+    const nodePath = process.platform === 'win32' ? 'node.exe' : 'node';
+    
+    serverProcess = spawn(nodePath, ['backend/server.js'], {
         cwd: __dirname,
-        env: { ...process.env, ELECTRON_RUN: 'true' }
+        env: { ...process.env, ELECTRON_RUN: 'true' },
+        shell: true  // Add this line!
     });
 
     serverProcess.stdout.on('data', (data) => {

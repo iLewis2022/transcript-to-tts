@@ -45,6 +45,7 @@ class SFXModule {
         // Show/hide modules
         document.getElementById('dialogue-module')?.classList.toggle('hidden', tabName !== 'dialogue');
         document.getElementById('sfx-module')?.classList.toggle('hidden', tabName !== 'sfx');
+        document.getElementById('image-module')?.classList.toggle('hidden', tabName !== 'images');
     }
     
     async loadFromDialogue() {

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTS Protocol Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .test-link {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 18px;
+            margin: 20px 0;
+            transition: background 0.3s;
+        }
+        .test-link:hover {
+            background: #5a67d8;
+        }
+        .instructions {
+            background: #e8f4fd;
+            border: 1px solid #bee3f8;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-box">
+        <h1>🎯 TTS Protocol Handler Test</h1>
+        <p>Click the link below to test the TTS protocol handler:</p>
+        
+        <a href="tts://launch" class="test-link">🚀 Launch TTS Processor</a>
+        
+        <div class="instructions">
+            <h3>📋 Instructions:</h3>
+            <ol>
+                <li>First, run <code>install-protocol.bat</code> as administrator</li>
+                <li>Then click the "Launch TTS Processor" link above</li>
+                <li>Your browser should ask permission to open the TTS protocol</li>
+                <li>The TTS processor should launch automatically</li>
+            </ol>
+        </div>
+        
+        <div class="instructions">
+            <h3>🔧 If it doesn't work:</h3>
+            <ul>
+                <li>Make sure you ran <code>install-protocol.bat</code> as administrator</li>
+                <li>Check that Node.js is installed and <code>npm</code> is available</li>
+                <li>Verify the path in <code>tts-protocol.reg</code> matches your installation</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html> 

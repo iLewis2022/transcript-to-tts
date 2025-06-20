@@ -125,6 +125,9 @@ class FileDownloadManager {
                         <button class="btn btn-secondary" onclick="fileDownloadManager.downloadMetadata()">
                             📋 Download Metadata
                         </button>
+                        <button class="btn btn-accent tts-launch-btn" onclick="fileDownloadManager.launchTTSProcessor()" style="margin-left: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                            🚀 Start New Episode
+                        </button>
                     </div>
                 </div>
                 
@@ -674,6 +677,158 @@ class FileDownloadManager {
         // TODO: Implement proper error notification
         console.error(message);
         alert('Error: ' + message);
+    }
+
+    /**
+     * Launch TTS Processor using custom protocol
+     */
+    launchTTSProcessor() {
+        try {
+            // Use the custom tts:// protocol to launch the processor
+            window.location.href = 'tts://launch';
+            
+            // Show a nice notification
+            this.showLaunchNotification();
+            
+        } catch (error) {
+            console.error('Failed to launch TTS processor:', error);
+            
+            // Fallback: show manual instructions
+            this.showLaunchFallback();
+        }
+    }
+
+    /**
+     * Show launch notification
+     */
+    showLaunchNotification() {
+        // Create a beautiful notification
+        const notification = document.createElement('div');
+        notification.className = 'launch-notification';
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+            z-index: 10000;
+            max-width: 350px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            animation: slideIn 0.3s ease-out;
+        `;
+        
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="font-size: 2rem;">🚀</div>
+                <div>
+                    <div style="font-weight: 600; font-size: 1.1rem; margin-bottom: 4px;">
+                        Launching TTS Processor...
+                    </div>
+                    <div style="font-size: 0.9rem; opacity: 0.9;">
+                        Your browser may ask for permission to open the TTS protocol.
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add animation keyframes if not already added
+        if (!document.querySelector('#launch-animations')) {
+            const style = document.createElement('style');
+            style.id = 'launch-animations';
+            style.textContent = `
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                @keyframes slideOut {
+                    from {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                    to {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 4 seconds
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease-in';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 4000);
+    }
+
+    /**
+     * Show fallback instructions if protocol doesn't work
+     */
+    showLaunchFallback() {
+        const modal = document.createElement('div');
+        modal.className = 'modal launch-fallback-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10001;
+        `;
+        
+        modal.innerHTML = `
+            <div style="background: white; border-radius: 12px; padding: 2rem; max-width: 500px; margin: 1rem;">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🚀</div>
+                    <h3 style="margin: 0 0 0.5rem 0; color: #333;">Launch TTS Processor</h3>
+                    <p style="color: #666; margin: 0;">Protocol handler not available</p>
+                </div>
+                
+                <div style="background: #f8f9fa; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                    <h4 style="margin: 0 0 0.5rem 0; color: #333;">Manual Launch Options:</h4>
+                    <ol style="margin: 0; padding-left: 1.2rem; color: #555;">
+                        <li>Run <code style="background: #e9ecef; padding: 2px 6px; border-radius: 4px; font-family: monospace;">npm run dev</code> in your terminal</li>
+                        <li>Or double-click <code style="background: #e9ecef; padding: 2px 6px; border-radius: 4px; font-family: monospace;">tts-launcher.bat</code></li>
+                        <li>Or install the protocol handler from BatchFiles folder</li>
+                    </ol>
+                </div>
+                
+                <div style="text-align: center;">
+                    <button onclick="this.closest('.modal').remove()" 
+                            style="background: #667eea; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; font-size: 1rem;">
+                        Got it!
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Close on background click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
     }
 }
 

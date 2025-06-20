@@ -22,6 +22,7 @@
             <nav class="workflow-nav">
                 <button class="nav-tab active" data-tab="dialogue">Dialogue Processing</button>
                 <button class="nav-tab" data-tab="sfx">Sound Effects</button>
+                <button class="nav-tab" data-tab="images">Image Scourer</button>
             </nav>
 
             <!-- Dialogue Module (existing workflow) -->
@@ -383,6 +384,103 @@
                 </section>
             </div> <!-- End sfx-module -->
 
+            <!-- Image Scourer Module -->
+            <div id="image-module" class="module-container hidden">
+                <!-- Script Section -->
+                <section id="img-script-section" class="section active">
+                    <h2>📜 1. Script</h2>
+                    <div class="script-status">
+                        <p>Current script: <span id="img-script-name" class="filename-display">None loaded</span></p>
+                        <div class="script-buttons">
+                            <button id="img-load-from-dialogue" class="secondary-button">Load from Dialogue Tab</button>
+                            <span class="button-separator">or</span>
+                            <label for="img-file-input" class="primary-button file-upload-btn">
+                                📁 Upload Script Directly
+                                <input type="file" id="img-file-input" accept=".md,.txt,.doc,.docx" hidden>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="img-script-preview" class="hidden">
+                        <h3>Script Preview</h3>
+                        <pre id="img-script-content" class="script-preview"></pre>
+                    </div>
+                </section>
+                
+                <!-- Analysis Prompt Section -->
+                <section id="img-prompt-section" class="section hidden">
+                    <h2>🎨 2. Visual Analysis Prompt</h2>
+                    <div class="info-box">
+                        <p>Copy this prompt for Claude/ChatGPT to analyze visual opportunities:</p>
+                    </div>
+                    <div class="prompt-container">
+                        <pre id="img-llm-prompt" class="prompt-display"></pre>
+                        <button id="img-copy-prompt" class="primary-button">Copy to Clipboard</button>
+                    </div>
+                </section>
+                
+                <!-- Response Section -->
+                <section id="img-response-section" class="section hidden">
+                    <h2>📋 3. Paste Analysis</h2>
+                    <textarea id="img-llm-response" class="large-textarea" placeholder="Paste the visual analysis here..."></textarea>
+                    <button id="img-parse-response" class="primary-button">Parse Response</button>
+                </section>
+                
+                <!-- Visual Opportunities Display -->
+                <section id="img-display-section" class="section hidden">
+                    <h2>🖼️ 4. Visual Opportunities</h2>
+                    
+                    <!-- Stats -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-images">0</div>
+                            <div class="stat-label">Image Opportunities</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-videos">0</div>
+                            <div class="stat-label">Video Candidates</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="epic-moments">0</div>
+                            <div class="stat-label">Epic Moments</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab Navigation -->
+                    <div class="visual-tabs">
+                        <button class="visual-tab active" data-type="images">🖼️ All Images</button>
+                        <button class="visual-tab" data-type="videos">🎬 Video Candidates</button>
+                    </div>
+                    
+                    <!-- Image List -->
+                    <div id="image-list" class="visual-list active"></div>
+                    
+                    <!-- Video List -->
+                    <div id="video-list" class="visual-list hidden"></div>
+                </section>
+                
+                <!-- Export Section -->
+                <section id="img-export-section" class="section hidden">
+                    <h2>💾 5. Export Prompts</h2>
+                    <div class="export-buttons">
+                        <button id="export-midjourney" class="primary-button">
+                            📝 Midjourney Prompts (.txt)
+                        </button>
+                        <button id="export-kling" class="primary-button">
+                            🎬 Kling Prompts (.txt)
+                        </button>
+                        <button id="export-pdf" class="primary-button special-export">
+                            📄 Beautiful PDF Report
+                        </button>
+                        <button id="export-visual" class="primary-button special-export">
+                            🖼️ Visual WebP Summary
+                        </button>
+                        <button id="export-all" class="secondary-button">
+                            💾 Raw Data (.json)
+                        </button>
+                    </div>
+                </section>
+            </div> <!-- End image-module -->
+
             <!-- SFX Help Modal -->
             <div id="sfx-help-modal" class="modal hidden">
                 <div class="modal-content large">
@@ -568,6 +666,8 @@ Script to analyze: (Attached)</pre>
     <script src="js/template-manager.js"></script>
     <script src="js/tts-control-panel.js"></script>
     <script src="js/sfx-module.js"></script>
+    <script src="js/visual-analyzer.js"></script>
+    <script src="js/image-scourer.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html> 

@@ -851,6 +851,50 @@ class EpisodeLibrary {
         return this.formatSize(totalBytes);
     }
 
+    async openOutputFolder(outputDirectory) {
+        // Try to copy path to clipboard
+        try {
+            await navigator.clipboard.writeText(outputDirectory);
+            
+            // Show notification with the path
+            const notification = document.createElement('div');
+            notification.className = 'notification info';
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #3b82f6;
+                color: white;
+                padding: 1rem;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                z-index: 10000;
+                max-width: 400px;
+                font-size: 0.9rem;
+            `;
+            notification.innerHTML = `
+                <div><strong>📂 Output Folder Path:</strong></div>
+                <div style="margin: 0.5rem 0; font-family: monospace; background: rgba(255,255,255,0.2); padding: 0.5rem; border-radius: 4px; word-break: break-all;">
+                    ${outputDirectory}
+                </div>
+                <div style="font-size: 0.8rem; opacity: 0.9;">
+                    ✅ Path copied to clipboard! Navigate to this folder in your file explorer.
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 5000);
+            
+        } catch (error) {
+            // Fallback: just show the path
+            alert(`Output folder location:\n\n${outputDirectory}\n\n(Navigate to this folder in your file explorer)`);
+        }
+    }
+
     showSaveNotification(episodeName) {
         const notification = document.createElement('div');
         notification.className = 'notification success library-notification';
@@ -888,8 +932,8 @@ class EpisodeLibrary {
                 </p>
             </div>
             <div class="panel-footer">
-                <button class="btn btn-primary" onclick="window.open('file:///${episode.outputDirectory}')">
-                    Open Folder
+                <button class="btn btn-primary" onclick="episodeLibrary.openOutputFolder('${episode.outputDirectory}')">
+                    📂 Open Folder
                 </button>
                 <button class="btn btn-secondary" onclick="this.parentElement.parentElement.remove()">
                     Close

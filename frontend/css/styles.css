@@ -2213,6 +2213,410 @@ header p {
     50% { opacity: 0.5; }
 }
 
+/* TTS Launch Button Styling */
+.tts-launch-btn {
+    position: relative;
+    overflow: hidden;
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.tts-launch-btn:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.tts-launch-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #7c8ee6 0%, #8456b8 100%) !important;
+    animation: launchPulse 1s infinite;
+}
+
+.tts-launch-btn:hover:before {
+    left: 100%;
+}
+
+.tts-launch-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 15px rgba(102, 126, 234, 0.5);
+}
+
+/* Launch button animation */
+@keyframes launchPulse {
+    0% { transform: translateY(-2px) scale(1); }
+    50% { transform: translateY(-2px) scale(1.02); }
+    100% { transform: translateY(-2px) scale(1); }
+}
+
+/* ========================================
+   IMAGE SCOURER MODULE STYLES
+   ======================================== */
+
+/* Visual Item Styles */
+.visual-item {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.visual-item.epic {
+    border-color: #ff6b6b;
+    background: linear-gradient(135deg, rgba(255,107,107,0.1) 0%, transparent 100%);
+}
+
+.visual-item.high {
+    border-color: #f59e0b;
+}
+
+.visual-item.video-candidate {
+    border-color: #8b5cf6;
+    background: linear-gradient(135deg, rgba(139,92,246,0.1) 0%, transparent 100%);
+}
+
+.visual-item:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Visual Header */
+.visual-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.visual-number {
+    background: var(--accent);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    min-width: 50px;
+    text-align: center;
+}
+
+/* Type badges */
+.visual-type {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.visual-type.character_reveal { 
+    background: #ddd6fe; 
+    color: #6d28d9; 
+}
+
+.visual-type.epic_moment { 
+    background: #fee2e2; 
+    color: #dc2626; 
+}
+
+.visual-type.atmosphere { 
+    background: #cffafe; 
+    color: #0891b2; 
+}
+
+.visual-type.action_sequence { 
+    background: #fed7aa; 
+    color: #ea580c; 
+}
+
+.visual-type.emotional_beat { 
+    background: #fce7f3; 
+    color: #db2777; 
+}
+
+.visual-type.location_establish { 
+    background: #d9f99d; 
+    color: #65a30d; 
+}
+
+/* Impact levels */
+.visual-impact {
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.impact-epic { 
+    color: #dc2626; 
+    font-weight: 700; 
+}
+
+.impact-high { 
+    color: #f59e0b; 
+    font-weight: 600; 
+}
+
+.impact-medium { 
+    color: #3b82f6; 
+}
+
+.impact-low { 
+    color: #6b7280; 
+}
+
+/* Video badge */
+.video-badge {
+    background: #8b5cf6;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    margin-left: auto;
+}
+
+/* Visual scene description */
+.visual-scene {
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+    font-style: italic;
+}
+
+/* Visual tabs */
+.visual-tabs {
+    display: flex;
+    gap: 1rem;
+    margin: 1.5rem 0;
+    border-bottom: 2px solid var(--border);
+}
+
+.visual-tab {
+    padding: 0.75rem 1.5rem;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.visual-tab:hover {
+    color: var(--text-primary);
+}
+
+.visual-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+}
+
+/* Visual lists */
+.visual-list {
+    transition: opacity 0.3s ease;
+}
+
+.visual-list.hidden {
+    display: none;
+}
+
+.visual-list.active {
+    display: block;
+}
+
+/* Prompt containers */
+.prompt-container {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+    border: 1px solid var(--border);
+}
+
+.prompt-container label {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.visual-prompt,
+.video-prompt {
+    width: 100%;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    padding: 0.75rem;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    color: var(--text-primary);
+    resize: vertical;
+    min-height: 60px;
+}
+
+.visual-prompt:focus,
+.video-prompt:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+.copy-single-prompt {
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background 0.3s ease;
+}
+
+.copy-single-prompt:hover {
+    background: var(--accent-hover);
+}
+
+/* Video specific styles */
+.video-info {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(139, 92, 246, 0.1);
+    border-radius: 4px;
+    border-left: 4px solid #8b5cf6;
+}
+
+.video-info strong {
+    color: var(--text-primary);
+}
+
+/* Export buttons */
+.export-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.export-buttons button {
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.special-export {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.special-export:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.special-export::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.special-export:hover::before {
+    left: 100%;
+}
+
+/* Script status section */
+.script-status {
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+}
+
+.script-status p {
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+}
+
+/* Enhanced info box for Image Scourer */
+.info-box {
+    background: var(--info-bg);
+    border: 1px solid rgba(96, 165, 250, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.info-box p {
+    color: var(--text-primary);
+    margin: 0;
+}
+
+/* Responsive design for Image Scourer */
+@media (max-width: 768px) {
+    .visual-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .visual-tabs {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .visual-tab {
+        border-bottom: 1px solid var(--border);
+        border-radius: 0;
+        padding: 1rem;
+    }
+    
+    .visual-tab.active {
+        border-bottom-color: var(--accent);
+        background: rgba(102, 126, 234, 0.1);
+    }
+    
+    .export-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .export-buttons button {
+        min-width: auto;
+    }
+    
+    .visual-item {
+        padding: 1rem;
+    }
+    
+    .prompt-container {
+        padding: 0.75rem;
+    }
+}
+
 /* ===========================
    SFX MODULE STYLES
    =========================== */

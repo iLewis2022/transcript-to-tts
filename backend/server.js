@@ -17,6 +17,8 @@ const templatesRoutes = require('./routes/templates');
 const ttsEnhancedRoutes = require('./routes/tts-enhanced');
 // SFX Module routes
 const sfxRoutes = require('./routes/sfx-routes');
+// Image Scourer Module routes
+const imageRoutes = require('./routes/image-routes');
 
 // Create Express app
 const app = express();
@@ -47,6 +49,8 @@ app.use('/api/templates', templatesRoutes);
 app.use('/api/tts', ttsEnhancedRoutes);
 // SFX Module routes
 app.use(sfxRoutes);
+// Image Scourer Module routes
+app.use('/api/images', imageRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
