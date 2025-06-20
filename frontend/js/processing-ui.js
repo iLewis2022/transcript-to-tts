@@ -360,8 +360,58 @@ class ProcessingUI {
         // Hide control buttons
         document.querySelector('.processing-controls').classList.add('hidden');
         
+        // Save episode to library
+        this.saveEpisodeToLibrary();
+        
         // Show completion actions
         this.showCompletionActions();
+        
+        // Check if auto-proceed is enabled (from advanced settings)
+        const settings = window.advancedSettings?.settings || {};
+        if (settings.interface?.autoProceedToDownload !== false) {
+            // Auto-proceed is enabled by default
+            setTimeout(() => {
+                console.log('Auto-proceeding to download section...');
+                window.proceedToDownload();
+            }, 2000);
+        }
+    }
+
+    /**
+     * Save completed episode to library
+     */
+    async saveEpisodeToLibrary() {
+        try {
+            if (!window.episodeLibrary) {
+                console.warn('Episode library not available');
+                return;
+            }
+
+            // Get episode data from current state
+            const episodeData = {
+                sessionId: this.sessionId,
+                episodeName: window.state?.currentFile?.name || 'Untitled Episode',
+                episodeNumber: window.state?.episodeNumber,
+                outputDirectory: `outputs/${this.sessionId}`,
+                totalFiles: this.stats.total,
+                completedFiles: this.stats.completed,
+                failedFiles: this.stats.failed,
+                totalCharacters: window.state?.totalCharacters || 0,
+                processingTime: Date.now() - this.startTime,
+                totalCost: window.state?.totalCost || 0,
+                speakers: window.state?.speakers || [],
+                files: window.state?.processedFiles || [],
+                metadata: {
+                    voiceMapping: window.state?.voiceMapping || {},
+                    settings: window.advancedSettings?.settings || {}
+                }
+            };
+
+            await window.episodeLibrary.saveEpisode(episodeData);
+            console.log('✓ Episode saved to library');
+        } catch (error) {
+            console.error('Failed to save episode to library:', error);
+        }
     }
 
     /**
@@ -391,6 +441,12 @@ class ProcessingUI {
         `;
         
         container.insertAdjacentHTML('beforeend', actionsHTML);
+        
+        // Auto-proceed to download after 2 seconds
+        setTimeout(() => {
+            console.log('Auto-proceeding to download section...');
+            proceedToDownload();
+        }, 2000);
     }
 
     /**

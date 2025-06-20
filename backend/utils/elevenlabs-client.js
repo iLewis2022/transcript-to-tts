@@ -172,15 +172,34 @@ class ElevenLabsClient {
                 use_speaker_boost: true
             };
             
+            const data = {
+                text: text.substring(0, 500), // Limit preview length
+                model_id: voiceSettings?.model_id || config.elevenLabs.model,
+                voice_settings: {
+                    stability: settings.stability,
+                    similarity_boost: settings.similarity_boost,
+                    style: settings.style,
+                    use_speaker_boost: settings.use_speaker_boost
+                }
+            };
+            
+            // Add language code for multilingual models
+            if (voiceSettings?.model_id?.includes('multilingual') && voiceSettings.language_code) {
+                data.language_code = voiceSettings.language_code;
+            }
+            
+            // Set output format
+            const outputFormat = voiceSettings?.output_format || 'mp3_44100_128';
+            const acceptHeader = outputFormat.startsWith('mp3') ? 'audio/mpeg' : 'audio/wav';
+            
             const response = await axios.post(
                 `${this.baseURL}/text-to-speech/${voiceId}`,
+                data,
                 {
-                    text: text.substring(0, 500), // Limit preview length
-                    model_id: config.elevenLabs.model,
-                    voice_settings: settings
-                },
-                {
-                    headers: this.getHeaders(),
+                    headers: {
+                        ...this.getHeaders(),
+                        'Accept': acceptHeader
+                    },
                     responseType: 'arraybuffer'
                 }
             );
@@ -190,7 +209,7 @@ class ElevenLabsClient {
             
             return {
                 audio: audioBase64,
-                mimeType: 'audio/mpeg',
+                mimeType: acceptHeader,
                 characterCount: text.length
             };
             
@@ -212,15 +231,34 @@ class ElevenLabsClient {
                 use_speaker_boost: true
             };
             
+            const data = {
+                text: text,
+                model_id: voiceSettings?.model_id || config.elevenLabs.model,
+                voice_settings: {
+                    stability: settings.stability,
+                    similarity_boost: settings.similarity_boost,
+                    style: settings.style,
+                    use_speaker_boost: settings.use_speaker_boost
+                }
+            };
+            
+            // Add language code for multilingual models
+            if (voiceSettings?.model_id?.includes('multilingual') && voiceSettings.language_code) {
+                data.language_code = voiceSettings.language_code;
+            }
+            
+            // Set output format
+            const outputFormat = voiceSettings?.output_format || 'mp3_44100_128';
+            const acceptHeader = outputFormat.startsWith('mp3') ? 'audio/mpeg' : 'audio/wav';
+            
             const response = await axios.post(
                 `${this.baseURL}/text-to-speech/${voiceId}`,
+                data,
                 {
-                    text: text,
-                    model_id: config.elevenLabs.model,
-                    voice_settings: settings
-                },
-                {
-                    headers: this.getHeaders(),
+                    headers: {
+                        ...this.getHeaders(),
+                        'Accept': acceptHeader
+                    },
                     responseType: 'arraybuffer'
                 }
             );

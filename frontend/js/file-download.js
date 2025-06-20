@@ -34,21 +34,64 @@ class FileDownloadManager {
      * Show download interface - Phase 6.1.0
      */
     async showDownloadInterface() {
+        console.log('🔍 DEBUG: Starting showDownloadInterface...');
+        
         // Hide processing section
-        document.getElementById('processing-section').classList.add('hidden');
+        const processingSection = document.getElementById('processing-section');
+        if (processingSection) {
+            processingSection.classList.add('hidden');
+            console.log('✓ Processing section hidden');
+        } else {
+            console.log('⚠️ Processing section not found');
+        }
+        
+        // Hide all other sections first
+        document.querySelectorAll('.section').forEach(section => {
+            section.classList.add('hidden');
+            section.classList.remove('active');
+            console.log(`✓ Hidden section: ${section.id}`);
+        });
         
         // Create or show download section
         let downloadSection = document.getElementById('download-section');
         if (!downloadSection) {
+            console.log('📦 Creating new download section...');
             downloadSection = this.createDownloadSection();
-            document.querySelector('.container main').appendChild(downloadSection);
+            
+            // Find the main container
+            const mainContainer = document.querySelector('.container main');
+            if (mainContainer) {
+                mainContainer.appendChild(downloadSection);
+                console.log('✓ Download section added to main container');
+            } else {
+                console.error('❌ Main container not found! Trying body...');
+                // Fallback to body
+                document.body.appendChild(downloadSection);
+            }
+        } else {
+            console.log('♻️ Using existing download section');
         }
         
+        // Make sure it's visible
         downloadSection.classList.remove('hidden');
         downloadSection.classList.add('active');
+        downloadSection.style.display = 'block'; // Force display
+        
+        // Scroll to top to ensure visibility
+        window.scrollTo(0, 0);
+        downloadSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        console.log('📍 Download section classes:', downloadSection.className);
+        console.log('📍 Download section display:', getComputedStyle(downloadSection).display);
+        console.log('📍 Download section visibility:', getComputedStyle(downloadSection).visibility);
         
         // Load and display files
-        await this.loadFileList();
+        try {
+            await this.loadFileList();
+            console.log('✓ File list loaded');
+        } catch (error) {
+            console.error('❌ Failed to load file list:', error);
+        }
     }
 
     /**
@@ -57,81 +100,67 @@ class FileDownloadManager {
     createDownloadSection() {
         const section = document.createElement('section');
         section.id = 'download-section';
-        section.className = 'section';
+        section.className = 'section'; // Make sure it has the section class
+        
+        // Add inline style temporarily to ensure visibility
+        section.style.display = 'block';
+        section.style.minHeight = '500px';
+        section.style.padding = '20px';
         
         section.innerHTML = `
-            <h2>📥 Download Audio Files</h2>
-            
-            <!-- Download Overview -->
-            <div class="download-overview">
-                <div class="episode-summary">
-                    <h3 id="download-episode-title">Episode Files</h3>
-                    <p id="download-episode-info">Loading episode information...</p>
-                </div>
+            <div class="download-container">
+                <h2>📥 Download Audio Files</h2>
                 
-                <div class="download-actions">
-                    <button class="btn btn-primary btn-large" onclick="fileDownloadManager.downloadAllAsZip()">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                            <polyline points="7 10 12 15 17 10"/>
-                            <line x1="12" y1="15" x2="12" y2="3"/>
-                        </svg>
-                        Download All (ZIP)
-                    </button>
-                    <button class="btn btn-secondary" onclick="fileDownloadManager.downloadMetadata()">
-                        📋 Download Metadata
-                    </button>
-                </div>
-            </div>
-            
-            <!-- File Browser -->
-            <div class="file-browser">
-                <div class="browser-header">
-                    <h3>Individual Files</h3>
-                    <div class="browser-controls">
-                        <input type="text" id="file-search" placeholder="Search files..." class="search-input">
-                        <select id="speaker-filter" class="filter-select">
-                            <option value="">All Speakers</option>
-                        </select>
+                <!-- Download Overview -->
+                <div class="download-overview" style="background: var(--bg-secondary); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                    <div class="episode-summary">
+                        <h3 id="download-episode-title">Episode Files</h3>
+                        <p id="download-episode-info">Loading episode information...</p>
+                    </div>
+                    
+                    <div class="download-actions" style="margin-top: 20px;">
+                        <button class="btn btn-primary btn-large" onclick="fileDownloadManager.downloadAllAsZip()" style="font-size: 1.1rem; padding: 15px 30px;">
+                            📦 Download All (ZIP)
+                        </button>
+                        <button class="btn btn-secondary" onclick="fileDownloadManager.downloadMetadata()">
+                            📋 Download Metadata
+                        </button>
                     </div>
                 </div>
                 
-                <!-- File List -->
-                <div class="file-list" id="download-file-list">
-                    <div class="loading-message">
-                        <div class="spinner"></div>
-                        <p>Loading files...</p>
+                <!-- File Browser -->
+                <div class="file-browser" style="background: var(--bg-secondary); padding: 20px; border-radius: 12px;">
+                    <div class="browser-header">
+                        <h3>Individual Files</h3>
+                        <div class="browser-controls">
+                            <input type="text" id="file-search" placeholder="Search files..." class="search-input">
+                            <select id="speaker-filter" class="filter-select">
+                                <option value="">All Speakers</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- File List -->
+                    <div class="file-list" id="download-file-list" style="margin-top: 20px;">
+                        <div class="loading-message" style="text-align: center; padding: 40px;">
+                            <div class="spinner" style="width: 40px; height: 40px; margin: 0 auto 20px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                            <p>Loading files...</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Batch Download -->
-            <div class="batch-download hidden" id="batch-download">
-                <h3>Batch Download</h3>
-                <div class="batch-info">
-                    <p>Selected: <span id="batch-count">0</span> files</p>
-                    <p>Total size: <span id="batch-size">0 MB</span></p>
+                
+                <!-- Hidden elements -->
+                <div class="batch-download hidden" id="batch-download">
+                    <!-- Batch download UI -->
                 </div>
-                <div class="batch-actions">
-                    <button class="btn btn-primary" onclick="fileDownloadManager.downloadSelected()">
-                        Download Selected
-                    </button>
-                    <button class="btn btn-secondary" onclick="fileDownloadManager.clearSelection()">
-                        Clear Selection
-                    </button>
+                
+                <div class="download-progress hidden" id="download-progress">
+                    <!-- Download progress UI -->
                 </div>
-            </div>
-            
-            <!-- Download Progress -->
-            <div class="download-progress hidden" id="download-progress">
-                <h4>Downloading...</h4>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="download-progress-fill"></div>
-                </div>
-                <p id="download-status">Preparing download...</p>
             </div>
         `;
         
+        console.log('✓ Download section HTML created');
         return section;
     }
 
@@ -648,5 +677,46 @@ class FileDownloadManager {
     }
 }
 
+// Debug function to help troubleshoot visibility issues
+function debugDownloadSection() {
+    console.log('🔍 DEBUGGING DOWNLOAD SECTION:');
+    
+    // Check main container
+    const mainContainer = document.querySelector('.container main');
+    console.log('Main container found:', !!mainContainer);
+    if (mainContainer) {
+        console.log('Main container children:', mainContainer.children.length);
+        Array.from(mainContainer.children).forEach((child, i) => {
+            console.log(`  Child ${i}: ${child.tagName}#${child.id}.${child.className}`);
+        });
+    }
+    
+    // Check all sections
+    const allSections = document.querySelectorAll('.section');
+    console.log('Total sections found:', allSections.length);
+    allSections.forEach(section => {
+        const styles = getComputedStyle(section);
+        console.log(`Section: ${section.id}`, {
+            hidden: section.classList.contains('hidden'),
+            active: section.classList.contains('active'),
+            display: styles.display,
+            visibility: styles.visibility,
+            height: styles.height
+        });
+    });
+    
+    // Check download section specifically
+    const downloadSection = document.getElementById('download-section');
+    if (downloadSection) {
+        console.log('✓ Download section exists');
+        console.log('Parent:', downloadSection.parentElement?.tagName);
+        console.log('Offset Parent:', downloadSection.offsetParent?.tagName);
+        console.log('Bounding rect:', downloadSection.getBoundingClientRect());
+    } else {
+        console.log('❌ Download section NOT FOUND');
+    }
+}
+
 // Initialize download manager
-window.fileDownloadManager = new FileDownloadManager(); 
+window.fileDownloadManager = new FileDownloadManager();
+window.debugDownloadSection = debugDownloadSection; 

@@ -143,7 +143,12 @@
             
             <!-- Speaker Mapping Section - Phase 3 -->
             <section id="mapping-section" class="section hidden">
-                <h2>Speaker to Voice Mapping</h2>
+                <div class="mapping-header">
+                    <h2>Speaker to Voice Mapping</h2>
+                    <button id="global-model-btn" class="btn btn-secondary" onclick="globalModelSettings.showGlobalSettings()">
+                        🎙️ Model Settings
+                    </button>
+                </div>
                 
                 <!-- Mapping Tools -->
                 <div class="mapping-tools">
@@ -185,28 +190,8 @@
                             <h3>Voice Settings</h3>
                             <button class="close-button" onclick="closeVoiceSettings()">×</button>
                         </div>
-                        <div class="modal-body">
-                            <div class="setting-group">
-                                <label for="stability">Stability</label>
-                                <input type="range" id="stability" min="0" max="1" step="0.05" value="0.75">
-                                <span class="value-display">0.75</span>
-                            </div>
-                            <div class="setting-group">
-                                <label for="similarity">Similarity Boost</label>
-                                <input type="range" id="similarity" min="0" max="1" step="0.05" value="0.75">
-                                <span class="value-display">0.75</span>
-                            </div>
-                            <div class="setting-group">
-                                <label for="style">Style</label>
-                                <input type="range" id="style" min="0" max="1" step="0.05" value="0.5">
-                                <span class="value-display">0.5</span>
-                            </div>
-                            <div class="setting-group">
-                                <label>
-                                    <input type="checkbox" id="speaker-boost" checked>
-                                    Use Speaker Boost
-                                </label>
-                            </div>
+                        <div class="modal-body" id="voice-settings-body">
+                            <!-- Content will be populated by JavaScript -->
                         </div>
                         <div class="modal-footer">
                             <button class="btn btn-primary" onclick="saveVoiceSettings()">Save Settings</button>
@@ -249,6 +234,8 @@
     <!-- Audio Preview Player (hidden, for voice previews) -->
     <audio id="preview-player" hidden></audio>
     
+    <script src="js/session-recovery.js"></script>
+    <script src="js/episode-library.js"></script>
     <script src="js/speaker-mapper.js"></script>
     <script src="js/file-preview.js"></script>
     <script src="js/cost-display.js"></script>

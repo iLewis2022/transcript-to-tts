@@ -1,0 +1,126 @@
+{
+  "version": "1.0",
+  "exportedAt": "2025-06-20T07:09:04.392Z",
+  "mapping": {
+    "JOE": {
+      "voiceId": "PEZliFihamC0sWpMVxtU",
+      "voiceName": "JoeBloggs",
+      "settings": {
+        "stability": 0.36,
+        "similarity_boost": 0.9,
+        "style": 0,
+        "use_speaker_boost": true
+      }
+    },
+    "CELESTIA": {
+      "voiceId": "HuHKGfd0ezlDSxEqz6vk",
+      "voiceName": "Cleric",
+      "settings": {
+        "stability": 0.76,
+        "similarity_boost": 0.45,
+        "style": 0,
+        "use_speaker_boost": true
+      }
+    },
+    "TRONALD": {
+      "voiceId": "fCYcwWaLd0Wldu2qAsWG",
+      "voiceName": "Wizard 1",
+      "settings": {
+        "stability": 0.36,
+        "similarity_boost": 0.9,
+        "style": 0,
+        "use_speaker_boost": true
+      }
+    },
+    "ALDEN": {
+      "voiceId": "71XiuuwQwklI1fdsd6S2",
+      "voiceName": "MattMerc2",
+      "settings": {
+        "stability": 0.3,
+        "similarity_boost": 0.82,
+        "style": 0.09,
+        "use_speaker_boost": true
+      }
+    },
+    "SAXY": {
+      "voiceId": "Ft1sELKp8TDXtuszSZOZ",
+      "voiceName": "Artificer",
+      "settings": {
+        "stability": 0.33,
+        "similarity_boost": 0.84,
+        "style": 0,
+        "use_speaker_boost": false
+      }
+    },
+    "RAARH": {
+      "voiceId": "jM6JJ3sNP84NQYnOFxTA",
+      "voiceName": "Gordon Ramsey",
+      "settings": {
+        "stability": 0.39,
+        "similarity_boost": 0.9,
+        "style": 0,
+        "use_speaker_boost": true
+      }
+    },
+    "MITE": {
+      "voiceId": "tz9Kg1vcbVyr5gKbIL07",
+      "voiceName": "MikeTyson",
+      "settings": {
+        "stability": 0.38,
+        "similarity_boost": 1,
+        "style": 0,
+        "use_speaker_boost": true
+      }
+    },
+    "DROGAR": {
+      "voiceId": "s0jBOxW6jzuRmyMN6uex",
+      "voiceName": "Kratos",
+      "settings": {
+        "stability": 0.37,
+        "similarity_boost": 0.75,
+        "style": 0.28,
+        "use_speaker_boost": true
+      }
+    },
+    "MIRROR VOICE": {
+      "voiceId": "RhK7DwPriTWUYBeeR9CW",
+      "voiceName": "Eleanor - Councilmember",
+      "settings": {
+        "stability": 0.75,
+        "similarity_boost": 0.75,
+        "style": 0.5,
+        "use_speaker_boost": true
+      }
+    },
+    "CHAINED FIGURE": {
+      "voiceId": "1TE7ou3jyxHsyRehUuMB",
+      "voiceName": "Eastend Steve",
+      "settings": {
+        "stability": 0.24,
+        "similarity_boost": 0.82,
+        "style": 0,
+        "use_speaker_boost": true
+      }
+    },
+    "ANCIENT DRAGON": {
+      "voiceId": "ggEvA3qowatl2DrbfcSy",
+      "voiceName": "JoeyDiaz",
+      "settings": {
+        "stability": 0.48,
+        "similarity_boost": 0.89,
+        "style": 0,
+        "use_speaker_boost": true
+      }
+    },
+    "ANCIENT VOICE": {
+      "voiceId": "lWBNHcs4Reqg1eGu0rzL",
+      "voiceName": "CellAlucard",
+      "settings": {
+        "stability": 0.37,
+        "similarity_boost": 0.75,
+        "style": 0.28,
+        "use_speaker_boost": true
+      }
+    }
+  }
+}

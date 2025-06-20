@@ -66,5 +66,10 @@ module.exports = {
       soft: parseFloat(process.env.WARNING_THRESHOLD_SOFT) || 100,
       hard: parseFloat(process.env.WARNING_THRESHOLD_HARD) || 250
     }
+  },
+
+  // Session Configuration
+  session: {
+    cleanupHours: parseInt(process.env.SESSION_CLEANUP_HOURS) || 24
   }
 }; 

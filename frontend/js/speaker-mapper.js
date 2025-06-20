@@ -3,6 +3,7 @@ class SpeakerMapper {
     constructor() {
         this.availableVoices = [];
         this.speakerMapping = {};
+        this.voiceSettings = {};
         this.previewCache = new Map();
         this.isLoading = false;
     }
@@ -85,6 +86,18 @@ class SpeakerMapper {
      */
     getSpeakerMapping() {
         return this.speakerMapping;
+    }
+
+    /**
+     * Update mapping with voice ID - for compatibility with voice settings modal
+     */
+    updateMapping(speaker, voiceId) {
+        if (this.availableVoices.length > 0) {
+            const voice = this.availableVoices.find(v => v.voice_id === voiceId);
+            if (voice) {
+                this.mapSpeakerToVoice(speaker, voiceId);
+            }
+        }
     }
 
     /**

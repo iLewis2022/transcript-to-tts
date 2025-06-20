@@ -4,6 +4,7 @@ const router = express.Router();
 const ttsProcessor = require('../utils/tts-processor');
 const fileManager = require('../utils/file-manager');
 const logger = require('../utils/logger');
+const config = require('../config/environment');
 
 // Store active processing sessions
 const processingSessions = new Map();
@@ -222,7 +223,7 @@ function setupProcessingListeners(sessionId) {
             // Clean up session after completion
             setTimeout(() => {
                 processingSessions.delete(sessionId);
-            }, 300000); // Keep for 5 minutes after completion
+            }, config.session.cleanupHours * 60 * 60 * 1000); // Convert hours to milliseconds
         }
     };
     

@@ -994,16 +994,110 @@ function openVoiceSettings(speaker) {
         return;
     }
     
-    // Load current settings
-    document.getElementById('stability').value = mapping.settings.stability;
-    document.getElementById('similarity').value = mapping.settings.similarity_boost;
-    document.getElementById('style').value = mapping.settings.style;
-    document.getElementById('speaker-boost').checked = mapping.settings.use_speaker_boost;
+    // Get current settings with defaults
+    const currentSettings = mapping.settings || {};
+    const voiceSettings = state.speakerMapper.voiceSettings?.[speaker] || {};
     
-    // Update displays
-    document.querySelectorAll('#voice-settings-modal input[type="range"]').forEach(input => {
-        input.nextElementSibling.textContent = input.value;
-    });
+    // Create enhanced voice settings HTML
+    const enhancedVoiceSettingsHTML = `
+        <div class="voice-settings-content">
+            <h4>Voice Settings for ${speaker}</h4>
+            
+            <!-- Model Selection -->
+            <div class="setting-group">
+                <label>TTS Model</label>
+                <select id="voice-model" class="voice-model-select" onchange="updateModelDescription()">
+                    <option value="eleven_multilingual_v2" ${(voiceSettings.model_id || globalModelSettings.defaultModel) === 'eleven_multilingual_v2' ? 'selected' : ''}>Eleven Multilingual v2 (Balanced)</option>
+                    <option value="eleven_turbo_v2_5" ${(voiceSettings.model_id || globalModelSettings.defaultModel) === 'eleven_turbo_v2_5' ? 'selected' : ''}>Eleven Turbo v2.5 (Fastest)</option>
+                    <option value="eleven_turbo_v2" ${(voiceSettings.model_id || globalModelSettings.defaultModel) === 'eleven_turbo_v2' ? 'selected' : ''}>Eleven Turbo v2</option>
+                    <option value="eleven_monolingual_v1" ${(voiceSettings.model_id || globalModelSettings.defaultModel) === 'eleven_monolingual_v1' ? 'selected' : ''}>Eleven English v1 (Highest Quality)</option>
+                    <option value="eleven_multilingual_v1" ${(voiceSettings.model_id || globalModelSettings.defaultModel) === 'eleven_multilingual_v1' ? 'selected' : ''}>Eleven Multilingual v1</option>
+                </select>
+                <p class="model-description" id="model-description">
+                    Balanced quality and speed. Supports 29 languages.
+                </p>
+            </div>
+            
+            <!-- Language Selection -->
+            <div class="setting-group" id="language-group">
+                <label>Language</label>
+                <select id="voice-language" class="voice-language-select">
+                    <option value="en" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'en' ? 'selected' : ''}>English</option>
+                    <option value="es" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'es' ? 'selected' : ''}>Spanish</option>
+                    <option value="fr" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'fr' ? 'selected' : ''}>French</option>
+                    <option value="de" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'de' ? 'selected' : ''}>German</option>
+                    <option value="it" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'it' ? 'selected' : ''}>Italian</option>
+                    <option value="pt" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'pt' ? 'selected' : ''}>Portuguese</option>
+                    <option value="pl" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'pl' ? 'selected' : ''}>Polish</option>
+                    <option value="tr" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'tr' ? 'selected' : ''}>Turkish</option>
+                    <option value="ru" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'ru' ? 'selected' : ''}>Russian</option>
+                    <option value="nl" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'nl' ? 'selected' : ''}>Dutch</option>
+                    <option value="cs" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'cs' ? 'selected' : ''}>Czech</option>
+                    <option value="ar" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'ar' ? 'selected' : ''}>Arabic</option>
+                    <option value="zh" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'zh' ? 'selected' : ''}>Chinese</option>
+                    <option value="ja" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'ja' ? 'selected' : ''}>Japanese</option>
+                    <option value="ko" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'ko' ? 'selected' : ''}>Korean</option>
+                    <option value="hi" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'hi' ? 'selected' : ''}>Hindi</option>
+                    <option value="sv" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'sv' ? 'selected' : ''}>Swedish</option>
+                    <option value="da" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'da' ? 'selected' : ''}>Danish</option>
+                    <option value="fi" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'fi' ? 'selected' : ''}>Finnish</option>
+                    <option value="no" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'no' ? 'selected' : ''}>Norwegian</option>
+                    <option value="ro" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'ro' ? 'selected' : ''}>Romanian</option>
+                    <option value="bg" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'bg' ? 'selected' : ''}>Bulgarian</option>
+                    <option value="uk" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'uk' ? 'selected' : ''}>Ukrainian</option>
+                    <option value="el" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'el' ? 'selected' : ''}>Greek</option>
+                    <option value="hu" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'hu' ? 'selected' : ''}>Hungarian</option>
+                    <option value="id" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'id' ? 'selected' : ''}>Indonesian</option>
+                    <option value="ms" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'ms' ? 'selected' : ''}>Malay</option>
+                    <option value="vi" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'vi' ? 'selected' : ''}>Vietnamese</option>
+                    <option value="th" ${(voiceSettings.language_code || globalModelSettings.defaultLanguage) === 'th' ? 'selected' : ''}>Thai</option>
+                </select>
+            </div>
+            
+            <!-- Output Format -->
+            <div class="setting-group">
+                <label>Output Format</label>
+                <select id="output-format" class="output-format-select">
+                    <option value="mp3_44100_128" ${(voiceSettings.output_format || globalModelSettings.defaultFormat) === 'mp3_44100_128' ? 'selected' : ''}>MP3 - 128kbps, 44.1kHz (Default)</option>
+                    <option value="mp3_44100_64" ${(voiceSettings.output_format || globalModelSettings.defaultFormat) === 'mp3_44100_64' ? 'selected' : ''}>MP3 - 64kbps, 44.1kHz (Smaller)</option>
+                    <option value="mp3_44100_192" ${(voiceSettings.output_format || globalModelSettings.defaultFormat) === 'mp3_44100_192' ? 'selected' : ''}>MP3 - 192kbps, 44.1kHz (Higher Quality)</option>
+                    <option value="pcm_16000" ${(voiceSettings.output_format || globalModelSettings.defaultFormat) === 'pcm_16000' ? 'selected' : ''}>PCM - 16kHz (Uncompressed)</option>
+                    <option value="pcm_22050" ${(voiceSettings.output_format || globalModelSettings.defaultFormat) === 'pcm_22050' ? 'selected' : ''}>PCM - 22.05kHz (Uncompressed)</option>
+                    <option value="pcm_24000" ${(voiceSettings.output_format || globalModelSettings.defaultFormat) === 'pcm_24000' ? 'selected' : ''}>PCM - 24kHz (Uncompressed)</option>
+                    <option value="pcm_44100" ${(voiceSettings.output_format || globalModelSettings.defaultFormat) === 'pcm_44100' ? 'selected' : ''}>PCM - 44.1kHz (Uncompressed)</option>
+                </select>
+            </div>
+            
+            <!-- Voice Settings -->
+            <div class="setting-group">
+                <label>Stability <span id="stability-value">${Math.round((currentSettings.stability || 0.5) * 100)}</span></label>
+                <input type="range" id="stability-slider" min="0" max="100" value="${Math.round((currentSettings.stability || 0.5) * 100)}" oninput="document.getElementById('stability-value').textContent = this.value">
+            </div>
+            
+            <div class="setting-group">
+                <label>Similarity Boost <span id="similarity-value">${Math.round((currentSettings.similarity_boost || 0.75) * 100)}</span></label>
+                <input type="range" id="similarity-slider" min="0" max="100" value="${Math.round((currentSettings.similarity_boost || 0.75) * 100)}" oninput="document.getElementById('similarity-value').textContent = this.value">
+            </div>
+            
+            <div class="setting-group">
+                <label>Style <span id="style-value">${Math.round((currentSettings.style || 0) * 100)}</span></label>
+                <input type="range" id="style-slider" min="0" max="100" value="${Math.round((currentSettings.style || 0) * 100)}" oninput="document.getElementById('style-value').textContent = this.value">
+            </div>
+            
+            <div class="setting-group">
+                <label>
+                    <input type="checkbox" id="speaker-boost" ${currentSettings.use_speaker_boost !== false ? 'checked' : ''}>
+                    Use Speaker Boost
+                </label>
+            </div>
+        </div>
+    `;
+    
+    // Update modal content
+    document.getElementById('voice-settings-body').innerHTML = enhancedVoiceSettingsHTML;
+    
+    // Initialize model description
+    updateModelDescription();
     
     // Show modal
     document.getElementById('voice-settings-modal').classList.remove('hidden');
@@ -1017,17 +1111,66 @@ function closeVoiceSettings() {
 function saveVoiceSettings() {
     if (!state.currentSettingsSpeaker) return;
     
+    const speaker = state.currentSettingsSpeaker;
+    const model = document.getElementById('voice-model').value;
+    const language = document.getElementById('voice-language').value;
+    const outputFormat = document.getElementById('output-format').value;
+    const stability = parseInt(document.getElementById('stability-slider').value);
+    const similarityBoost = parseInt(document.getElementById('similarity-slider').value);
+    const style = parseInt(document.getElementById('style-slider').value);
+    const useSpeakerBoost = document.getElementById('speaker-boost').checked;
+    
+    // Update traditional settings
     const settings = {
-        stability: parseFloat(document.getElementById('stability').value),
-        similarity_boost: parseFloat(document.getElementById('similarity').value),
-        style: parseFloat(document.getElementById('style').value),
-        use_speaker_boost: document.getElementById('speaker-boost').checked
+        stability: stability / 100,
+        similarity_boost: similarityBoost / 100,
+        style: style / 100,
+        use_speaker_boost: useSpeakerBoost
     };
     
     // Update the mapping
-    const mapping = state.speakerMapper.speakerMapping[state.currentSettingsSpeaker];
+    const mapping = state.speakerMapper.speakerMapping[speaker];
     if (mapping) {
         mapping.settings = settings;
+    }
+    
+    // Initialize voiceSettings if not exists
+    if (!state.speakerMapper.voiceSettings) {
+        state.speakerMapper.voiceSettings = {};
+    }
+    
+    // Update voice settings with model data
+    state.speakerMapper.voiceSettings[speaker] = {
+        model_id: model,
+        language_code: language,
+        output_format: outputFormat,
+        stability: stability / 100,
+        similarity_boost: similarityBoost / 100,
+        style: style / 100,
+        use_speaker_boost: useSpeakerBoost
+    };
+    
+    // Update UI to show model selection
+    const mappingRow = document.querySelector(`[data-speaker="${speaker}"]`);
+    if (mappingRow) {
+        let modelBadge = mappingRow.querySelector('.model-badge');
+        if (!modelBadge) {
+            modelBadge = document.createElement('span');
+            modelBadge.className = 'model-badge';
+            const voiceSelect = mappingRow.querySelector('.voice-select');
+            if (voiceSelect) {
+                voiceSelect.parentNode.appendChild(modelBadge);
+            }
+        }
+        
+        // Update badge text based on model
+        if (model.includes('turbo')) {
+            modelBadge.textContent = '⚡ Turbo';
+        } else if (model.includes('v2')) {
+            modelBadge.textContent = '🌟 v2';
+        } else {
+            modelBadge.textContent = '📢 v1';
+        }
     }
     
     closeVoiceSettings();
@@ -1211,6 +1354,178 @@ window.adjustSettings = adjustSettings;
 window.startOver = startOver;
 window.updateVoiceMapping = updateVoiceMapping;
 window.previewVoice = previewVoice;
+// Model description updater
+function updateModelDescription() {
+    const modelSelect = document.getElementById('voice-model');
+    const descriptionEl = document.getElementById('model-description');
+    const languageGroup = document.getElementById('language-group');
+    
+    const descriptions = {
+        'eleven_multilingual_v2': 'Latest model. Balanced quality and speed. Supports 29 languages.',
+        'eleven_turbo_v2_5': 'Fastest generation, lowest latency. Ideal for real-time applications.',
+        'eleven_turbo_v2': 'Fast generation with good quality. Lower latency than standard models.',
+        'eleven_monolingual_v1': 'Highest quality for English only. Best for final production.',
+        'eleven_multilingual_v1': 'Previous generation. Good quality, supports 13 languages.'
+    };
+    
+    const multilingualModels = ['eleven_multilingual_v2', 'eleven_multilingual_v1'];
+    
+    if (modelSelect && descriptionEl) {
+        descriptionEl.textContent = descriptions[modelSelect.value] || '';
+        
+        // Show/hide language selection based on model
+        if (languageGroup) {
+            if (multilingualModels.includes(modelSelect.value)) {
+                languageGroup.style.display = 'block';
+            } else {
+                languageGroup.style.display = 'none';
+                document.getElementById('voice-language').value = 'en';
+            }
+        }
+    }
+}
+
+// Global model settings class
+class GlobalModelSettings {
+    constructor() {
+        this.defaultModel = 'eleven_multilingual_v2';
+        this.defaultLanguage = 'en';
+        this.defaultFormat = 'mp3_44100_128';
+        this.loadDefaults();
+    }
+    
+    showGlobalSettings() {
+        const modal = document.createElement('div');
+        modal.className = 'modal global-model-modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>🎙️ Global TTS Model Settings</h3>
+                    <button class="close-button" onclick="this.closest('.modal').remove()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="global-settings-info">
+                        <p>Set default model settings for all new speakers. Individual speakers can still override these.</p>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>Default Model</label>
+                        <select id="global-default-model">
+                            <option value="eleven_multilingual_v2">Eleven Multilingual v2 (Recommended)</option>
+                            <option value="eleven_turbo_v2_5">Eleven Turbo v2.5 (Fastest)</option>
+                            <option value="eleven_monolingual_v1">Eleven English v1 (Highest Quality)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>Default Language</label>
+                        <select id="global-default-language">
+                            <option value="en">English</option>
+                            <option value="auto">Auto-detect</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>Default Output Format</label>
+                        <select id="global-default-format">
+                            <option value="mp3_44100_128">MP3 - 128kbps (Recommended)</option>
+                            <option value="mp3_44100_192">MP3 - 192kbps (Higher Quality)</option>
+                            <option value="mp3_44100_64">MP3 - 64kbps (Smaller Files)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="model-comparison">
+                        <h4>Model Comparison</h4>
+                        <table>
+                            <tr>
+                                <th>Model</th>
+                                <th>Quality</th>
+                                <th>Speed</th>
+                                <th>Languages</th>
+                                <th>Best For</th>
+                            </tr>
+                            <tr>
+                                <td>Multilingual v2</td>
+                                <td>⭐⭐⭐⭐</td>
+                                <td>⭐⭐⭐</td>
+                                <td>29</td>
+                                <td>General use</td>
+                            </tr>
+                            <tr>
+                                <td>Turbo v2.5</td>
+                                <td>⭐⭐⭐</td>
+                                <td>⭐⭐⭐⭐⭐</td>
+                                <td>1</td>
+                                <td>Quick previews</td>
+                            </tr>
+                            <tr>
+                                <td>English v1</td>
+                                <td>⭐⭐⭐⭐⭐</td>
+                                <td>⭐⭐</td>
+                                <td>1</td>
+                                <td>Final production</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" onclick="globalModelSettings.saveDefaults()">
+                        Save Defaults
+                    </button>
+                    <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Load current defaults
+        document.getElementById('global-default-model').value = this.defaultModel;
+        document.getElementById('global-default-language').value = this.defaultLanguage;
+        document.getElementById('global-default-format').value = this.defaultFormat;
+    }
+    
+    saveDefaults() {
+        this.defaultModel = document.getElementById('global-default-model').value;
+        this.defaultLanguage = document.getElementById('global-default-language').value;
+        this.defaultFormat = document.getElementById('global-default-format').value;
+        
+        // Save to localStorage
+        localStorage.setItem('tts_default_model', this.defaultModel);
+        localStorage.setItem('tts_default_language', this.defaultLanguage);
+        localStorage.setItem('tts_default_format', this.defaultFormat);
+        
+        document.querySelector('.global-model-modal').remove();
+        
+        this.showNotification('Default model settings saved');
+    }
+    
+    loadDefaults() {
+        this.defaultModel = localStorage.getItem('tts_default_model') || 'eleven_multilingual_v2';
+        this.defaultLanguage = localStorage.getItem('tts_default_language') || 'en';
+        this.defaultFormat = localStorage.getItem('tts_default_format') || 'mp3_44100_128';
+    }
+    
+    showNotification(message) {
+        const notification = document.createElement('div');
+        notification.className = 'notification success';
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => notification.classList.add('show'), 10);
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+}
+
+// Initialize global settings
+window.globalModelSettings = new GlobalModelSettings();
+
+window.updateModelDescription = updateModelDescription;
 window.openVoiceSettings = openVoiceSettings;
 window.closeVoiceSettings = closeVoiceSettings;
 window.saveVoiceSettings = saveVoiceSettings;
@@ -1263,61 +1578,86 @@ async function proceedToProcessing() {
 
 // Phase 6 functions - File Download & Management
 async function proceedToDownload() {
-    console.log('[DEBUG] proceedToDownload called');
-    console.log('[DEBUG] Current sessionId:', state.currentSessionId);
-    console.log('[DEBUG] fileDownloadManager available:', !!window.fileDownloadManager);
+    console.log('Proceeding to download section...');
     
-    const sessionId = state.currentSessionId;
+    const sessionId = window.state?.currentSessionId;
     if (!sessionId) {
-        console.error('[ERROR] No active session found');
+        console.error('No active session found');
         alert('No active session found');
         return;
     }
     
-    if (!window.fileDownloadManager) {
-        console.error('[ERROR] fileDownloadManager not available');
-        alert('Download manager not loaded');
-        return;
-    }
-    
     try {
-        console.log('[DEBUG] Initializing download manager...');
+        // Initialize download manager with session
         const initialized = await window.fileDownloadManager.initialize(sessionId);
-        console.log('[DEBUG] Download manager initialized:', initialized);
-        
         if (initialized) {
-            console.log('[DEBUG] Showing download interface...');
+            // Hide processing section
+            document.getElementById('processing-section').classList.add('hidden');
+            
+            // Show download interface
             await window.fileDownloadManager.showDownloadInterface();
             window.fileDownloadManager.setupFilters();
-            console.log('[DEBUG] Download interface setup complete');
+            
+            console.log('Download interface loaded successfully');
+            
+            // DEBUG: Run diagnostic
+            setTimeout(() => {
+                window.debugDownloadSection();
+            }, 100);
+            
         } else {
-            console.error('[ERROR] Failed to initialize download manager');
-            alert('Failed to load download information');
+            throw new Error('Failed to initialize download manager');
         }
     } catch (error) {
-        console.error('[ERROR] Download error:', error);
-        alert(`Download error: ${error.message}`);
+        console.error('Failed to load download interface:', error);
+        alert('Failed to load download information. Please try refreshing the page.');
     }
 }
 
-function viewProcessingDetails() {
-    // Show processing log and details
-    const logSection = document.querySelector('.processing-log-section');
-    if (logSection) {
-        logSection.scrollIntoView({ behavior: 'smooth' });
-    } else {
-        alert('Processing details not available');
-    }
+async function viewProcessingDetails() {
+    // Show processing details in download section
+    await proceedToDownload();
 }
 
 function startNewEpisode() {
     if (confirm('Start processing a new episode? This will reset the current session.')) {
-        location.reload();
+        // Reset state
+        window.state = {
+            currentFile: null,
+            currentFileId: null,
+            currentSessionId: null,
+            parseResults: null,
+            speakerMapper: null
+        };
+        
+        // Hide all sections
+        document.querySelectorAll('.section').forEach(s => {
+            s.classList.add('hidden');
+            s.classList.remove('active');
+        });
+        
+        // Show upload section
+        const uploadSection = document.getElementById('upload-section');
+        uploadSection.classList.remove('hidden');
+        uploadSection.classList.add('active');
+        
+        // Reset file input
+        document.getElementById('file-input').value = '';
+        document.getElementById('upload-zone').classList.remove('hidden');
+        document.getElementById('file-preview').classList.add('hidden');
+        
+        // Clear any download sections
+        const downloadSection = document.getElementById('download-section');
+        if (downloadSection) {
+            downloadSection.remove();
+        }
+        
+        console.log('Reset complete, ready for new episode');
     }
 }
 
 async function proceedToPartialDownload() {
-    // Same as proceedToDownload - handles partial processing results
+    // Same as regular download but with partial files
     await proceedToDownload();
 }
 
